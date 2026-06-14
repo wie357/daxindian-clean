@@ -799,7 +799,7 @@ async function purgePhotos(days){
 }
 
 /* ---------- 故障回報 ---------- */
-const FAULT_TYPES=["水龍頭","蓮蓬頭","投幣式寄物櫃","馬桶","其他"];
+const FAULT_TYPES=["水龍頭","蓮蓬頭","投幣式吹風機","馬桶","其他"];
 function openFaultReport(){
   pendingPhoto=null;
   const opts=FAULT_TYPES.map(t=>'<option value="'+t+'">'+t+'</option>').join("");
