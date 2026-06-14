@@ -78,7 +78,7 @@
     display:flex;align-items:center;justify-content:center;text-align:center;
     transition:.18s;padding:0;font-weight:800;
   }
-  .stall{border-radius:6px;font-size:4.6cqw;font-weight:900}
+  .stall{border-radius:6px;font-size:4.6cqw;font-weight:900;flex-direction:column}
   .stall small{display:block;font-size:1.7cqw;font-weight:700;margin-top:2px;opacity:.85}
   .fx{border-radius:5px;font-size:2.5cqw;line-height:1.15;flex-direction:column}
   .fx.round{border-radius:50%}
@@ -86,9 +86,19 @@
   .stall:hover,.fx:hover{filter:brightness(1.08)}
   .stall:active,.fx:active{transform:scale(.96)}
   .stall.done,.fx.done{background:linear-gradient(135deg,var(--done),var(--done2));color:#fff;box-shadow:0 0 0 3px rgba(34,197,94,.25)}
+  .c-done{background:linear-gradient(135deg,#22c55e,#16a34a)!important;color:#fff!important;box-shadow:0 0 0 3px rgba(34,197,94,.25)}
+  .c-2{background:#fde047!important;color:#3b2f0b!important}      /* 2天未洗 淡黃 */
+  .c-3{background:#ea580c!important;color:#fff!important}          /* 3天未洗 深橘 */
+  .c-4{background:#3f2a1d!important;color:#f5e9e0!important}       /* 4天未洗 咖啡黑 */
+  .c-5{background:#dc2626!important;color:#fff!important}          /* 4天以上 紅 */
+  .priority{animation:pulse 1.3s infinite}
+  @keyframes pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
+  .pri{position:absolute;bottom:1px;left:50%;transform:translateX(-50%);background:#fff;color:#dc2626;font-weight:800;font-size:1.9cqw;line-height:1;padding:1px 3px;border-radius:4px;white-space:nowrap;display:none}
+  .stall.priority .pri,.fx.priority .pri{display:block}
+  .st.r{background:#7f1d1d;color:#fecaca}
   .stall.has-photo::after,.fx.has-photo::after{content:"📷";position:absolute;top:3px;right:4px;font-size:2.4cqw}
   .stall .tick,.fx .tick{position:absolute;top:2px;left:5px;font-size:2.6cqw;display:none}
-  .stall.done .tick,.fx.done .tick{display:block}
+  .stall.c-done .tick,.fx.c-done .tick{display:block}
 
   .legend{display:flex;gap:16px;flex-wrap:wrap;margin:12px 4px 0;font-size:12.5px;color:var(--muted)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
@@ -184,8 +194,8 @@
     <div class="logo">🚿</div>
     <h2>大新店清潔紀錄系統</h2>
     <p class="sub">女浴室 · 清潔登記</p>
-    <label class="fl" for="u">帳號</label>
-    <input class="fld" id="u" autocomplete="username" placeholder="請輸入帳號">
+    <label class="fl" for="dept">部門</label>
+    <select class="fld" id="dept"><option value="清潔部">清潔部</option></select>
     <label class="fl" for="p">密碼</label>
     <input class="fld" id="p" type="password" autocomplete="current-password" placeholder="請輸入密碼">
     <button class="btn" onclick="staffLogin()">登入</button>
@@ -287,21 +297,23 @@ const SHOWER_TIPS = ["四面隔板、水溝蓋刷洗", "垃圾及頭髮清除", 
    可清潔區域（淋浴間 + 其他設施），座標對應女浴室平面圖
    ============================================================ */
 const ITEMS = [
-  // 淋浴間
+  // 淋浴間 上排
   {id:"14",type:"shower",label:"淋浴間 14",short:"14",x:37.0,y:5,w:7.5,h:21},
   {id:"13",type:"shower",label:"淋浴間 13",short:"13",x:45.2,y:5,w:7.5,h:21},
   {id:"12",type:"shower",label:"淋浴間 12",short:"12",x:53.4,y:5,w:7.5,h:21},
   {id:"11",type:"shower",label:"淋浴間 11",short:"11",x:61.6,y:5,w:7.5,h:21},
   {id:"10",type:"shower",label:"淋浴間 10",short:"10",x:69.8,y:5,w:7.5,h:21},
+  // 右排
   {id:"9", type:"shower",label:"淋浴間 9", short:"9", x:86.0,y:38,w:11,h:9.5},
   {id:"8", type:"shower",label:"淋浴間 8", short:"8", x:86.0,y:48.5,w:11,h:9.5},
   {id:"7", type:"shower",label:"淋浴間 7", short:"7", x:86.0,y:59,w:11,h:9.5},
   {id:"6", type:"shower",label:"淋浴間 6", short:"6", x:86.0,y:69.5,w:11,h:9.5},
-  {id:"1", type:"shower",label:"淋浴間 1", short:"1", x:46.5,y:72.5,w:8,h:22},
-  {id:"2", type:"shower",label:"淋浴間 2", short:"2", x:55.2,y:72.5,w:8,h:22},
-  {id:"3", type:"shower",label:"淋浴間 3", short:"3", x:63.9,y:72.5,w:8,h:22},
-  {id:"4", type:"shower",label:"淋浴間 4", short:"4", x:72.6,y:72.5,w:8,h:22},
-  {id:"5", type:"shower",label:"淋浴間 5", short:"5", x:81.3,y:67,w:11,h:27.5},
+  // 下排（整排往左移，5 不再蓋到 6）
+  {id:"1", type:"shower",label:"淋浴間 1", short:"1", x:34,y:72.5,w:8,h:22},
+  {id:"2", type:"shower",label:"淋浴間 2", short:"2", x:43,y:72.5,w:8,h:22},
+  {id:"3", type:"shower",label:"淋浴間 3", short:"3", x:52,y:72.5,w:8,h:22},
+  {id:"4", type:"shower",label:"淋浴間 4", short:"4", x:61,y:72.5,w:8,h:22},
+  {id:"5", type:"shower",label:"淋浴間 5", short:"5", x:70,y:67,w:9,h:27.5},
   // 其他設施
   {id:"WC1",type:"fix",label:"馬桶 1",short:"馬桶",x:3,y:13,w:14,h:7,  tip:"沖洗並更換衛生紙及垃圾袋"},
   {id:"WC2",type:"fix",label:"馬桶 2",short:"馬桶",x:3,y:21.5,w:14,h:7,tip:"沖洗並更換衛生紙及垃圾袋"},
@@ -309,8 +321,11 @@ const ITEMS = [
   {id:"VA", type:"fix",label:"A梳妝台",short:"梳妝台A",x:3,y:55,w:14,h:8,tip:"桌面頭髮清除、電風扇灰塵清潔"},
   {id:"G1", type:"fix",label:"大型垃圾桶 1",short:"垃圾桶",x:3.5,y:70,w:8,h:8,round:true,tip:"垃圾袋更換"},
   {id:"G2", type:"fix",label:"大型垃圾桶 2",short:"垃圾桶",x:12,y:70,w:8,h:8,round:true,tip:"垃圾袋更換"},
-  {id:"VB", type:"fix",label:"B梳妝台",short:"梳妝台B",x:86,y:5,w:11,h:28,v:true,tip:"桌面頭髮清除、電風扇灰塵清潔"},
-  {id:"SINK",type:"fix",label:"洗手台",short:"洗手台",x:28,y:80,w:16,h:14,tip:"檯面與鏡面清潔、保持乾燥"},
+  {id:"VB", type:"fix",label:"B梳妝台",short:"梳妝台B",x:86,y:5,w:11,h:26,v:true,tip:"桌面頭髮清除、電風扇灰塵清潔"},
+  {id:"SINK",type:"fix",label:"洗手台",short:"洗手台",x:16,y:80,w:15,h:14,tip:"檯面與鏡面清潔、保持乾燥"},
+  // 小垃圾桶（可點選清潔）
+  {id:"SG1",type:"fix",label:"小垃圾桶 1",short:"小垃圾",x:88,y:31.5,w:7,h:6,round:true,tip:"垃圾袋更換"},
+  {id:"SG2",type:"fix",label:"小垃圾桶 2",short:"小垃圾",x:79.7,y:71,w:6,h:6,round:true,tip:"垃圾袋更換"},
 ];
 function getItem(id){ return ITEMS.find(i=>i.id===id); }
 function tipsOf(it){ return it.type==="shower" ? SHOWER_TIPS : [it.tip]; }
@@ -336,6 +351,16 @@ function fmtTime(ts){ const d=new Date(ts);
     +" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
 function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
 function doneToday(rec){ return rec && rec.status==="done" && isToday(rec.at); }
+function daysSince(ts){ if(!ts) return Infinity; const a=new Date(ts); a.setHours(0,0,0,0); const n=new Date(); n.setHours(0,0,0,0); return Math.round((n-a)/86400000); }
+function ageOf(st){
+  const dd=(st&&st.at)?daysSince(st.at):Infinity;
+  if(dd===0) return {dd,colorClass:"c-done",label:"已清",priority:false};
+  if(dd===Infinity||dd===1) return {dd,colorClass:"",label:"未清",priority:false};
+  if(dd===2) return {dd,colorClass:"c-2",label:"2天",priority:false};
+  if(dd===3) return {dd,colorClass:"c-3",label:"3天",priority:false};
+  if(dd===4) return {dd,colorClass:"c-4",label:"4天",priority:false};
+  return {dd,colorClass:"c-5",label:"優先",priority:true};
+}
 
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 
@@ -420,10 +445,10 @@ async function deleteTask(id){
    登入 / 角色
    ============================================================ */
 function staffLogin(){
-  const u=document.getElementById("u").value.trim();
+  const dept=document.getElementById("dept").value;
   const p=document.getElementById("p").value;
-  if(u===STAFF.user && p===STAFF.pass){ enter("staff",u); }
-  else{ document.getElementById("loginErr").textContent="帳號或密碼錯誤"; }
+  if(p===STAFF.pass){ enter("staff",dept); }
+  else{ document.getElementById("loginErr").textContent="密碼錯誤"; }
 }
 document.getElementById("secret").addEventListener("click",()=>{
   const pw=prompt("主管密碼"); if(pw===null) return;
@@ -468,10 +493,10 @@ function buildPlan(){
     b.style.left=it.x+"%"; b.style.top=it.y+"%"; b.style.width=it.w+"%"; b.style.height=it.h+"%";
     if(it.type==="shower"){
       b.className="stall";
-      b.innerHTML='<span class="tick">✓</span>'+it.short+'<small>淋浴間</small>';
+      b.innerHTML='<span class="tick">✓</span><span class="pri">優先處理</span>'+it.short+'<small>淋浴間</small>';
     }else{
       b.className="fx"+(it.round?" round":"");
-      b.innerHTML='<span class="tick">✓</span>'+it.short;
+      b.innerHTML='<span class="tick">✓</span><span class="pri">優先</span>'+it.short;
       if(it.v){ b.style.writingMode="vertical-rl"; b.style.letterSpacing="2px"; }
     }
     b.onclick=()=>openDo("item",it.id);
@@ -481,9 +506,11 @@ function buildPlan(){
 function renderPlan(){
   ITEMS.forEach(it=>{
     const b=document.getElementById("cell-"+it.id); if(!b) return;
-    const st=itemState[it.id]; const ok=doneToday(st);
-    b.classList.toggle("done",!!ok);
-    b.classList.toggle("has-photo", !!(st&&st.photo&&isToday(st.at)));
+    const st=itemState[it.id]; const a=ageOf(st);
+    b.classList.remove("c-done","c-2","c-3","c-4","c-5","priority","has-photo");
+    if(a.colorClass) b.classList.add(a.colorClass);
+    if(a.priority) b.classList.add("priority");
+    if(st&&st.photo&&isToday(st.at)) b.classList.add("has-photo");
   });
 }
 
@@ -501,9 +528,11 @@ function openDo(kind,id){
   }else{
     const it=getItem(id); title=it.label;
     tipsHtml='<div class="tips"><b>清潔提示</b><ul>'+tipsOf(it).map(t=>'<li>'+t+'</li>').join('')+'</ul></div>';
-    const st=itemState[id];
-    if(doneToday(st)) info='本日已由 <b>'+(st.by||'—')+'</b> 於 '+fmtTime(st.at)+' 清潔';
-    else info='尚未清潔';
+    const st=itemState[id]; const a=ageOf(st);
+    if(a.dd===0) info='本日已由 <b>'+(st.by||'—')+'</b> 於 '+fmtTime(st.at)+' 清潔';
+    else if(a.dd===Infinity) info='尚未有清潔紀錄';
+    else info='已 '+a.dd+' 天未清潔'+(st&&st.at?'（上次 '+fmtTime(st.at)+'）':'');
+    if(a.priority) info='<span style="color:#fca5a5;font-weight:800">⚠️ 已超過4天未清潔，請優先處理！</span><br>'+info;
   }
   document.getElementById("modal").innerHTML=`
     <div class="overlay" onclick="if(event.target===this)closeModal()">
@@ -592,28 +621,30 @@ function bossTab(t){
 }
 function renderBoss(){
   // 計數
-  let done=0; ITEMS.forEach(it=>{ if(doneToday(itemState[it.id])) done++; });
+  let done=0; ITEMS.forEach(it=>{ if(ageOf(itemState[it.id]).dd===0) done++; });
   document.getElementById("cDone").textContent=done;
   document.getElementById("cLeft").textContent=ITEMS.length-done;
   // 淋浴間
   const grid=document.getElementById("grid14"); grid.innerHTML="";
   ITEMS.filter(i=>i.type==="shower").slice().sort((a,b)=>Number(a.id)-Number(b.id)).forEach(it=>{
-    const st=itemState[it.id]; const ok=doneToday(st);
-    const d=document.createElement("div"); d.className="mini"+(ok?" done":"");
-    d.innerHTML=it.short+(ok?'<small>'+(st.by||'')+'</small>':'<small>未清</small>');
-    d.title=ok?(st.by+" "+fmtTime(st.at)):"尚未清潔";
-    d.onclick=()=>{ if(ok&&st.photo) showLightbox(st.photo); };
+    const st=itemState[it.id]; const a=ageOf(st);
+    const d=document.createElement("div"); d.className="mini"+(a.colorClass?(" "+a.colorClass):"")+(a.priority?" priority":"");
+    d.innerHTML=it.short+'<small>'+(a.dd===0?(st&&st.by?st.by:'已清'):a.label)+'</small>';
+    d.title=a.dd===0?((st.by||'')+" "+fmtTime(st.at)):(a.dd===Infinity?"尚未清潔":a.dd+"天未清潔");
+    d.onclick=()=>{ if(st&&st.photo&&isToday(st.at)) showLightbox(st.photo); };
     grid.appendChild(d);
   });
   // 其他區域
   const fl=document.getElementById("fixList"); fl.innerHTML="";
   ITEMS.filter(i=>i.type==="fix").forEach(it=>{
-    const st=itemState[it.id]; const ok=doneToday(st);
+    const st=itemState[it.id]; const a=ageOf(st); const ok=a.dd===0;
     const row=document.createElement("div"); row.className="arow"+(ok?" done":"");
-    row.innerHTML=`<div class="ic">${it.short}</div>
+    const pillCls=ok?'ok':(a.priority?'r':'no');
+    const pillTxt=ok?'已清潔':(a.priority?'優先處理':((a.dd>=2&&a.dd!==Infinity)?a.dd+'天未洗':'未清潔'));
+    row.innerHTML=`<div class="ic ${a.colorClass}">${it.short}</div>
       <div class="tx"><b>${it.label}</b><div>${ok?('✓ '+(st.by||'')+' · '+fmtTime(st.at)):it.tip}</div></div>
       ${ok&&st.photo?`<img src="${st.photo}" onclick="showLightbox('${cssUrl(st.photo)}')">`:''}
-      <span class="st ${ok?'ok':'no'}">${ok?'已清潔':'未清潔'}</span>`;
+      <span class="st ${pillCls}">${pillTxt}</span>`;
     fl.appendChild(row);
   });
   renderTaskAdmin();
