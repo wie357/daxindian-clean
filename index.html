@@ -241,6 +241,7 @@
         <div class="stat ok"><div class="n" id="cDone">0</div><div class="l">今日已清潔</div></div>
         <div class="stat no"><div class="n" id="cLeft">0</div><div class="l">尚未清潔</div></div>
       </div>
+      <p class="hint" style="margin-top:14px">👆 點任一區域可「確認已檢查完成」，系統會重設日期、顏色歸零。</p>
       <div class="section-title">🚿 淋浴間</div>
       <div class="grid14" id="grid14"></div>
       <div class="section-title">🧹 其他區域</div>
@@ -304,10 +305,10 @@ const ITEMS = [
   {id:"11",type:"shower",label:"淋浴間 11",short:"11",x:61.6,y:5,w:7.5,h:21},
   {id:"10",type:"shower",label:"淋浴間 10",short:"10",x:69.8,y:5,w:7.5,h:21},
   // 右排
-  {id:"9", type:"shower",label:"淋浴間 9", short:"9", x:86.0,y:38,w:11,h:9.5},
-  {id:"8", type:"shower",label:"淋浴間 8", short:"8", x:86.0,y:48.5,w:11,h:9.5},
-  {id:"7", type:"shower",label:"淋浴間 7", short:"7", x:86.0,y:59,w:11,h:9.5},
-  {id:"6", type:"shower",label:"淋浴間 6", short:"6", x:86.0,y:69.5,w:11,h:9.5},
+  {id:"9", type:"shower",label:"淋浴間 9", short:"9", x:86.0,y:40,w:11,h:9.5},
+  {id:"8", type:"shower",label:"淋浴間 8", short:"8", x:86.0,y:50.5,w:11,h:9.5},
+  {id:"7", type:"shower",label:"淋浴間 7", short:"7", x:86.0,y:61,w:11,h:9.5},
+  {id:"6", type:"shower",label:"淋浴間 6", short:"6", x:86.0,y:71.5,w:11,h:16},
   // 下排（整排往左移，5 不再蓋到 6）
   {id:"1", type:"shower",label:"淋浴間 1", short:"1", x:34,y:72.5,w:8,h:22},
   {id:"2", type:"shower",label:"淋浴間 2", short:"2", x:43,y:72.5,w:8,h:22},
@@ -321,11 +322,11 @@ const ITEMS = [
   {id:"VA", type:"fix",label:"A梳妝台",short:"梳妝台A",x:3,y:55,w:14,h:8,tip:"桌面頭髮清除、電風扇灰塵清潔"},
   {id:"G1", type:"fix",label:"大型垃圾桶 1",short:"垃圾桶",x:3.5,y:70,w:8,h:8,round:true,tip:"垃圾袋更換"},
   {id:"G2", type:"fix",label:"大型垃圾桶 2",short:"垃圾桶",x:12,y:70,w:8,h:8,round:true,tip:"垃圾袋更換"},
-  {id:"VB", type:"fix",label:"B梳妝台",short:"梳妝台B",x:86,y:5,w:11,h:26,v:true,tip:"桌面頭髮清除、電風扇灰塵清潔"},
+  {id:"VB", type:"fix",label:"B梳妝台",short:"梳妝台B",x:86,y:5,w:11,h:24,v:true,tip:"桌面頭髮清除、電風扇灰塵清潔"},
   {id:"SINK",type:"fix",label:"洗手台",short:"洗手台",x:16,y:80,w:15,h:14,tip:"檯面與鏡面清潔、保持乾燥"},
   // 小垃圾桶（可點選清潔）
-  {id:"SG1",type:"fix",label:"小垃圾桶 1",short:"小垃圾",x:88,y:31.5,w:7,h:6,round:true,tip:"垃圾袋更換"},
-  {id:"SG2",type:"fix",label:"小垃圾桶 2",short:"小垃圾",x:79.7,y:71,w:6,h:6,round:true,tip:"垃圾袋更換"},
+  {id:"SG1",type:"fix",label:"小垃圾桶 1",short:"小垃圾",x:87.5,y:29.5,w:9,h:9,round:true,tip:"垃圾袋更換"},
+  {id:"SG2",type:"fix",label:"小垃圾桶 2",short:"小垃圾",x:79,y:73,w:7,h:8,round:true,tip:"垃圾袋更換"},
 ];
 function getItem(id){ return ITEMS.find(i=>i.id===id); }
 function tipsOf(it){ return it.type==="shower" ? SHOWER_TIPS : [it.tip]; }
@@ -534,18 +535,21 @@ function openDo(kind,id){
     else info='已 '+a.dd+' 天未清潔'+(st&&st.at?'（上次 '+fmtTime(st.at)+'）':'');
     if(a.priority) info='<span style="color:#fca5a5;font-weight:800">⚠️ 已超過4天未清潔，請優先處理！</span><br>'+info;
   }
+  const existPhoto=(kind==="item" && itemState[id] && itemState[id].photo)?itemState[id].photo:"";
+  const pboxHtml=existPhoto?('目前照片<br><img src="'+existPhoto+'">'):'📷 清潔後照片(選填)<br><span style="font-size:12px">拍照或選擇相片</span>';
+  const btnLabel=session.role==="boss"?"✓ 確認已檢查完成":"✓ 完成登記";
   document.getElementById("modal").innerHTML=`
     <div class="overlay" onclick="if(event.target===this)closeModal()">
       <div class="sheet">
         <h3>${title}</h3>
         <p class="meta">${info}</p>
         ${tipsHtml}
-        <div class="photo-box" id="pbox">📷 清潔後照片(選填)<br><span style="font-size:12px">拍照或選擇相片</span></div>
+        <div class="photo-box" id="pbox">${pboxHtml}</div>
         <label class="file-btn">📸 拍照 / 選擇照片
           <input type="file" accept="image/*" capture="environment" style="display:none" onchange="onPhoto(event)"></label>
         <div class="row" style="margin-top:16px">
           <button class="btn ghost" onclick="closeModal()">取消</button>
-          <button class="btn" id="confirmBtn" onclick="confirmDo()">✓ 完成登記</button>
+          <button class="btn" id="confirmBtn" onclick="confirmDo()">${btnLabel}</button>
         </div>
       </div>
     </div>`;
@@ -631,7 +635,7 @@ function renderBoss(){
     const d=document.createElement("div"); d.className="mini"+(a.colorClass?(" "+a.colorClass):"")+(a.priority?" priority":"");
     d.innerHTML=it.short+'<small>'+(a.dd===0?(st&&st.by?st.by:'已清'):a.label)+'</small>';
     d.title=a.dd===0?((st.by||'')+" "+fmtTime(st.at)):(a.dd===Infinity?"尚未清潔":a.dd+"天未清潔");
-    d.onclick=()=>{ if(st&&st.photo&&isToday(st.at)) showLightbox(st.photo); };
+    d.onclick=()=>openDo("item",it.id);
     grid.appendChild(d);
   });
   // 其他區域
@@ -643,8 +647,9 @@ function renderBoss(){
     const pillTxt=ok?'已清潔':(a.priority?'優先處理':((a.dd>=2&&a.dd!==Infinity)?a.dd+'天未洗':'未清潔'));
     row.innerHTML=`<div class="ic ${a.colorClass}">${it.short}</div>
       <div class="tx"><b>${it.label}</b><div>${ok?('✓ '+(st.by||'')+' · '+fmtTime(st.at)):it.tip}</div></div>
-      ${ok&&st.photo?`<img src="${st.photo}" onclick="showLightbox('${cssUrl(st.photo)}')">`:''}
+      ${ok&&st.photo?`<img src="${st.photo}" onclick="event.stopPropagation();showLightbox('${cssUrl(st.photo)}')">`:''}
       <span class="st ${pillCls}">${pillTxt}</span>`;
+    row.style.cursor="pointer"; row.onclick=()=>openDo("item",it.id);
     fl.appendChild(row);
   });
   renderTaskAdmin();
