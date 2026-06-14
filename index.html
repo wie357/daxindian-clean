@@ -22,7 +22,6 @@
   .hidden{display:none !important}
   .wrap{max-width:760px;margin:0 auto;padding:16px}
 
-  /* ===== Top bar ===== */
   header{
     position:sticky;top:0;z-index:20;
     background:rgba(15,23,42,.92);backdrop-filter:blur(8px);
@@ -44,7 +43,6 @@
   .btn.warn{background:var(--warn)}
   .btn.danger{background:var(--danger)}
 
-  /* ===== Login ===== */
   .login-card{
     max-width:380px;margin:8vh auto 0;background:var(--panel);
     border:1px solid var(--line);border-radius:18px;padding:28px 24px;
@@ -65,89 +63,57 @@
   input.fld:focus{outline:none;border-color:var(--accent)}
   .login-card .btn{width:100%;margin-top:20px;padding:13px}
   .err{color:#fca5a5;font-size:13px;text-align:center;margin-top:12px;min-height:18px}
-  /* hidden manager trigger */
-  .secret{
-    position:fixed;bottom:0;right:0;width:64px;height:64px;cursor:default;
-    z-index:5;
-  }
+  .secret{position:fixed;bottom:0;right:0;width:64px;height:64px;cursor:default;z-index:5}
 
-  /* ===== Floor plan ===== */
   .section-title{font-size:15px;font-weight:700;margin:18px 4px 12px;color:#cbd5e1;display:flex;align-items:center;gap:8px}
   .hint{font-size:13px;color:var(--muted);margin:0 4px 14px;line-height:1.6}
-  .plan-shell{
-    background:var(--panel);border:1px solid var(--line);border-radius:16px;
-    padding:14px;overflow:hidden;
-  }
-  .plan{
-    position:relative;width:100%;aspect-ratio:1040/595;
-    container-type:inline-size;
-  }
+  .plan-shell{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;overflow:hidden}
+  .plan{position:relative;width:100%;aspect-ratio:1040/595;container-type:inline-size}
   .room-label{
     position:absolute;display:flex;align-items:center;justify-content:center;
-    font-size:7cqw;font-weight:800;color:rgba(148,163,184,.35);
-    letter-spacing:.4em;pointer-events:none;
+    font-size:7cqw;font-weight:800;color:rgba(148,163,184,.35);letter-spacing:.4em;pointer-events:none;
   }
-  .fx{
-    position:absolute;background:#64748b;border-radius:5px;
-    display:flex;align-items:center;justify-content:center;
-    color:#0b1220;font-weight:700;font-size:2.6cqw;text-align:center;line-height:1.15;
+  .stall,.fx{
+    position:absolute;border:none;cursor:pointer;background:#64748b;color:#0b1220;
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    transition:.18s;padding:0;font-weight:800;
   }
-  .fx.round{border-radius:50%}
-  .stall{
-    position:absolute;border:none;border-radius:6px;cursor:pointer;
-    background:#64748b;color:#0b1220;font-weight:900;font-size:4.6cqw;
-    display:flex;align-items:center;justify-content:center;
-    transition:.18s;box-shadow:inset 0 0 0 0 rgba(0,0,0,0);
-    padding:0;
-  }
+  .stall{border-radius:6px;font-size:4.6cqw;font-weight:900}
   .stall small{display:block;font-size:1.7cqw;font-weight:700;margin-top:2px;opacity:.85}
-  .stall:hover{filter:brightness(1.08)}
-  .stall:active{transform:scale(.96)}
-  .stall.done{
-    background:linear-gradient(135deg,var(--done),var(--done2));color:#fff;
-    box-shadow:0 0 0 3px rgba(34,197,94,.25);
-  }
-  .stall.has-photo::after{
-    content:"📷";position:absolute;top:3px;right:4px;font-size:2.4cqw;
-  }
-  .stall .tick{position:absolute;top:2px;left:5px;font-size:2.6cqw;display:none}
-  .stall.done .tick{display:block}
+  .fx{border-radius:5px;font-size:2.5cqw;line-height:1.15;flex-direction:column}
+  .fx.round{border-radius:50%}
+  .fx small{font-size:1.7cqw;font-weight:700;opacity:.8;margin-top:1px}
+  .stall:hover,.fx:hover{filter:brightness(1.08)}
+  .stall:active,.fx:active{transform:scale(.96)}
+  .stall.done,.fx.done{background:linear-gradient(135deg,var(--done),var(--done2));color:#fff;box-shadow:0 0 0 3px rgba(34,197,94,.25)}
+  .stall.has-photo::after,.fx.has-photo::after{content:"📷";position:absolute;top:3px;right:4px;font-size:2.4cqw}
+  .stall .tick,.fx .tick{position:absolute;top:2px;left:5px;font-size:2.6cqw;display:none}
+  .stall.done .tick,.fx.done .tick{display:block}
 
-  /* legend */
   .legend{display:flex;gap:16px;flex-wrap:wrap;margin:12px 4px 0;font-size:12.5px;color:var(--muted)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .dot{width:13px;height:13px;border-radius:4px;display:inline-block}
   .dot.g{background:#64748b}.dot.d{background:var(--done)}
 
-  /* ===== Modal ===== */
-  .overlay{
-    position:fixed;inset:0;background:rgba(2,6,23,.7);z-index:40;
-    display:flex;align-items:flex-end;justify-content:center;padding:0;
-  }
+  .overlay{position:fixed;inset:0;background:rgba(2,6,23,.7);z-index:40;display:flex;align-items:flex-end;justify-content:center}
   .sheet{
-    background:var(--panel);width:100%;max-width:760px;
-    border-radius:20px 20px 0 0;border:1px solid var(--line);border-bottom:none;
-    padding:20px 18px calc(20px + env(safe-area-inset-bottom));
-    animation:up .22s ease;
+    background:var(--panel);width:100%;max-width:760px;border-radius:20px 20px 0 0;
+    border:1px solid var(--line);border-bottom:none;
+    padding:20px 18px calc(20px + env(safe-area-inset-bottom));animation:up .22s ease;max-height:90vh;overflow:auto;
   }
   @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
   .sheet h3{margin:0 0 4px;font-size:19px}
-  .sheet .meta{color:var(--muted);font-size:13px;margin:0 0 16px}
-  .photo-box{
-    border:2px dashed var(--line);border-radius:14px;padding:18px;text-align:center;
-    color:var(--muted);font-size:14px;margin-bottom:14px;
-  }
+  .sheet .meta{color:var(--muted);font-size:13px;margin:0 0 14px}
+  .tips{background:#0b1324;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 14px}
+  .tips b{font-size:13px;color:#7dd3fc}
+  .tips ul{margin:8px 0 0;padding-left:20px}
+  .tips li{font-size:13.5px;line-height:1.8;color:#e2e8f0}
+  .photo-box{border:2px dashed var(--line);border-radius:14px;padding:18px;text-align:center;color:var(--muted);font-size:14px;margin-bottom:14px}
   .photo-box img{max-width:100%;border-radius:10px;margin-top:10px;max-height:240px}
   .row{display:flex;gap:10px}
   .row .btn{flex:1}
-  .file-btn{
-    display:block;width:100%;padding:12px;border-radius:10px;text-align:center;
-    background:var(--panel2);color:var(--text);font-weight:600;cursor:pointer;font-size:14px;
-  }
-  .upbar{height:6px;background:#0b1324;border-radius:4px;overflow:hidden;margin-top:10px;display:none}
-  .upbar i{display:block;height:100%;width:0;background:var(--accent);transition:.2s}
+  .file-btn{display:block;width:100%;padding:12px;border-radius:10px;text-align:center;background:var(--panel2);color:var(--text);font-weight:600;cursor:pointer;font-size:14px}
 
-  /* ===== Manager ===== */
   .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 4px}
   .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
   .stat .n{font-size:26px;font-weight:800}
@@ -155,79 +121,96 @@
   .stat.ok .n{color:var(--done)}
   .stat.no .n{color:var(--warn)}
   .grid14{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin:14px 4px 0}
-  .mini{
-    aspect-ratio:1;border-radius:8px;background:#64748b;color:#0b1220;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    font-weight:800;font-size:15px;cursor:pointer;
-  }
+  .mini{aspect-ratio:1;border-radius:8px;background:#64748b;color:#0b1220;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:15px;cursor:pointer}
   .mini.done{background:linear-gradient(135deg,var(--done),var(--done2));color:#fff}
   .mini small{font-size:8px;font-weight:600}
+
+  .arow{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:8px;display:flex;gap:11px;align-items:center}
+  .arow .ic{width:38px;height:38px;border-radius:9px;background:#64748b;color:#0b1220;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;font-size:12px;text-align:center;line-height:1.1}
+  .arow.done .ic{background:var(--done);color:#fff}
+  .arow .tx{flex:1;min-width:0}
+  .arow .tx b{font-size:14px}
+  .arow .tx div{font-size:12px;color:var(--muted);margin-top:2px}
+  .arow img{width:42px;height:42px;border-radius:8px;object-fit:cover;cursor:pointer}
+  .arow .st{font-size:12px;font-weight:700;padding:4px 8px;border-radius:8px}
+  .arow .st.no{background:#3f2d12;color:#fcd34d}
+  .arow .st.ok{background:#064e3b;color:#6ee7b7}
+
   .log{margin:6px 4px 40px}
-  .log-item{
-    background:var(--panel);border:1px solid var(--line);border-radius:12px;
-    padding:12px 14px;margin-bottom:9px;display:flex;gap:12px;align-items:center;
-  }
-  .log-item .ic{
-    width:40px;height:40px;border-radius:10px;background:var(--done);color:#fff;
-    display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;font-size:15px;
-  }
+  .log-item{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:9px;display:flex;gap:12px;align-items:center}
+  .log-item .ic{width:40px;height:40px;border-radius:10px;background:var(--done);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;font-size:12px;text-align:center;line-height:1.05}
+  .log-item .ic.task{background:var(--accent)}
   .log-item .tx{flex:1;min-width:0}
-  .log-item .tx b{font-size:14.5px}
-  .log-item .tx div{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .log-item .tx b{font-size:14px}
+  .log-item .tx div{font-size:12px;color:var(--muted);margin-top:2px}
   .log-item img{width:46px;height:46px;border-radius:8px;object-fit:cover;cursor:pointer}
-  .empty{color:var(--muted);text-align:center;padding:30px;font-size:14px}
+  .empty{color:var(--muted);text-align:center;padding:24px;font-size:14px}
+
   .tabbar{display:flex;gap:8px;margin:16px 4px 4px}
-  .tabbar .btn{flex:1}
+  .tabbar .btn{flex:1;padding:9px 6px;font-size:13.5px}
   .tabbar .btn.ghost.active{background:var(--accent);color:#fff}
+
+  .memo{background:linear-gradient(135deg,#1e3a5f,#1e293b);border:1px solid #2563eb55;border-radius:14px;padding:14px 16px;margin:0 4px 8px}
+  .memo h4{margin:0 0 10px;font-size:14.5px;color:#bfdbfe;display:flex;align-items:center;gap:7px}
+  .task-staff{background:#0b1324;border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+  .task-staff.done{border-color:#16a34a55;background:#0c1f17}
+  .task-staff .t{flex:1;font-size:14px}
+  .task-staff .t small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px}
+  .task-staff img{width:38px;height:38px;border-radius:7px;object-fit:cover;cursor:pointer}
+
+  .addtask{display:flex;gap:8px;margin:6px 4px 14px}
+  .addtask input{flex:1;padding:11px 13px;border-radius:10px;border:1px solid var(--line);background:#0b1324;color:var(--text);font-size:14px}
+  .addtask input:focus{outline:none;border-color:var(--accent)}
+  .admin-task{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:8px}
+  .admin-task .top{display:flex;gap:10px;align-items:center}
+  .admin-task .top b{flex:1;font-size:14px}
+  .admin-task .sub{font-size:12px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:8px}
+  .admin-task .sub img{width:34px;height:34px;border-radius:6px;object-fit:cover;cursor:pointer}
+  .icon-btn{background:var(--panel2);border:none;color:var(--text);border-radius:8px;padding:6px 9px;font-size:12px;cursor:pointer}
+  .icon-btn:hover{background:var(--line)}
+  .icon-btn.del{color:#fca5a5}
 
   .cloud-tag{font-size:11.5px;padding:4px 9px;border-radius:999px;background:#064e3b;color:#6ee7b7}
   .cloud-tag.local{background:#3f2d12;color:#fcd34d}
-
   .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
   .lightbox img{max-width:100%;max-height:100%;border-radius:10px}
 </style>
 </head>
 <body>
 
-<!-- ================= LOGIN ================= -->
+<!-- ===== LOGIN ===== -->
 <div id="loginView">
   <div class="login-card">
     <div class="logo">🚿</div>
     <h2>大新店清潔紀錄系統</h2>
-    <p class="sub">女浴室 · 淋浴間清潔登記</p>
+    <p class="sub">女浴室 · 清潔登記</p>
     <label class="fl" for="u">帳號</label>
     <input class="fld" id="u" autocomplete="username" placeholder="請輸入帳號">
     <label class="fl" for="p">密碼</label>
     <input class="fld" id="p" type="password" autocomplete="current-password" placeholder="請輸入密碼">
     <button class="btn" onclick="staffLogin()">登入</button>
     <div class="err" id="loginErr"></div>
-    <div style="text-align:center;margin-top:16px">
-      <a href="#" onclick="openSetup();return false;" style="color:var(--muted);font-size:12.5px;text-decoration:none">⚙️ 雲端同步設定</a>
-    </div>
   </div>
-  <!-- hidden manager trigger (bottom-right corner) -->
-  <div class="secret" id="secret" title=""></div>
+  <div class="secret" id="secret"></div>
 </div>
 
-<!-- ================= APP ================= -->
+<!-- ===== APP ===== -->
 <div id="appView" class="hidden">
   <header>
     <div class="bar">
       <h1>大新店清潔紀錄</h1>
       <span class="cloud-tag" id="cloudTag">雲端</span>
       <span class="badge" id="roleBadge">—</span>
-      <button class="btn ghost sm" onclick="openSetup()" title="雲端設定">⚙️</button>
       <button class="btn ghost sm" onclick="logout()">登出</button>
     </div>
   </header>
 
-  <!-- ---- STAFF ---- -->
+  <!-- STAFF -->
   <div class="wrap" id="staffPanel">
-    <div class="section-title">🧽 點選你已刷洗完成的淋浴間</div>
-    <p class="hint">完成刷洗後，直接點選對應編號的淋浴間。完成後該間會變成<strong style="color:var(--done)">綠色</strong>，並可上傳清潔後照片。</p>
-    <div class="plan-shell">
-      <div class="plan" id="plan"></div>
-    </div>
+    <div id="memoArea"></div>
+    <div class="section-title">🧽 點選你已完成清潔的區域</div>
+    <p class="hint">完成清潔後，直接點選對應區域並可上傳照片。完成的區域會變成<strong style="color:var(--done)">綠色</strong>。</p>
+    <div class="plan-shell"><div class="plan" id="plan"></div></div>
     <div class="legend">
       <span><i class="dot g"></i>尚未清潔</span>
       <span><i class="dot d"></i>已清潔</span>
@@ -235,23 +218,36 @@
     </div>
   </div>
 
-  <!-- ---- MANAGER ---- -->
+  <!-- MANAGER -->
   <div class="wrap hidden" id="bossPanel">
     <div class="tabbar">
       <button class="btn ghost active" id="tabStatus" onclick="bossTab('status')">清潔狀況</button>
+      <button class="btn ghost" id="tabTasks" onclick="bossTab('tasks')">交辦事項</button>
       <button class="btn ghost" id="tabLog" onclick="bossTab('log')">訊息紀錄</button>
     </div>
 
     <div id="bossStatus">
       <div class="cards">
         <div class="stat ok"><div class="n" id="cDone">0</div><div class="l">今日已清潔</div></div>
-        <div class="stat no"><div class="n" id="cLeft">14</div><div class="l">尚未清潔</div></div>
+        <div class="stat no"><div class="n" id="cLeft">0</div><div class="l">尚未清潔</div></div>
       </div>
+      <div class="section-title">🚿 淋浴間</div>
       <div class="grid14" id="grid14"></div>
+      <div class="section-title">🧹 其他區域</div>
+      <div id="fixList"></div>
       <div style="display:flex;gap:10px;margin:16px 4px 30px">
         <button class="btn warn sm" onclick="resetToday()">重設今日狀態</button>
         <button class="btn ghost sm" onclick="exportCSV()">匯出紀錄CSV</button>
       </div>
+    </div>
+
+    <div id="bossTasks" class="hidden">
+      <div class="section-title" style="margin-top:8px">📝 交辦事項（填寫後清潔人員登入會看到）</div>
+      <div class="addtask">
+        <input id="newTask" placeholder="輸入一項交辦事項…" onkeydown="if(event.key==='Enter')addTask()">
+        <button class="btn" onclick="addTask()">＋ 新增</button>
+      </div>
+      <div id="taskAdminList"></div>
     </div>
 
     <div id="bossLog" class="hidden">
@@ -261,15 +257,12 @@
   </div>
 </div>
 
-<!-- clean modal -->
 <div id="modal"></div>
-<!-- lightbox -->
 <div id="lb"></div>
 
 <script>
 /* ============================================================
-   設定區 — 若要跨裝置雲端同步，請填入您的 Firebase 設定
-   未填寫時，系統自動以「本機儲存」模式運作(僅同一瀏覽器)
+   Firebase 設定（已填入，開啟即為雲端同步）
    ============================================================ */
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyAy-KORG_j5rCC_gAaraH9CnS9ANoO48Qs",
@@ -281,115 +274,146 @@ const FIREBASE_CONFIG = {
   measurementId: "G-GV5LHCFPRE"
 };
 
-/* ---- 帳號設定 ---- */
-const STAFF = { user:"yaf123", pass:"12345" };
+/* ---- 帳號 ---- */
+const STAFF = { user:"ya123", pass:"1234" };
 const BOSS_PASS = "12345";
-const TOTAL = 14;
 
 /* ============================================================
-   平面圖配置 (百分比座標, 對應上傳的女浴室平面圖)
+   清潔提示
    ============================================================ */
-const STALLS = [
-  {id:14,x:37.0,y:5,w:7.5,h:21},
-  {id:13,x:45.2,y:5,w:7.5,h:21},
-  {id:12,x:53.4,y:5,w:7.5,h:21},
-  {id:11,x:61.6,y:5,w:7.5,h:21},
-  {id:10,x:69.8,y:5,w:7.5,h:21},
-  {id:9, x:86.0,y:38,w:11,h:9.5},
-  {id:8, x:86.0,y:48.5,w:11,h:9.5},
-  {id:7, x:86.0,y:59,w:11,h:9.5},
-  {id:6, x:86.0,y:69.5,w:11,h:9.5},
-  {id:1, x:46.5,y:72.5,w:8,h:22},
-  {id:2, x:55.2,y:72.5,w:8,h:22},
-  {id:3, x:63.9,y:72.5,w:8,h:22},
-  {id:4, x:72.6,y:72.5,w:8,h:22},
-  {id:5, x:81.3,y:67,w:11,h:27.5},
-];
-const FIXTURES = [
-  {t:"馬桶",x:3,y:13,w:14,h:7},
-  {t:"馬桶",x:3,y:21.5,w:14,h:7},
-  {t:"馬桶",x:3,y:30,w:14,h:7},
-  {t:"梳妝台",x:3,y:55,w:14,h:8},
-  {t:"垃圾桶",x:3.5,y:70,w:8,h:8,round:true},
-  {t:"垃圾桶",x:12,y:70,w:8,h:8,round:true},
-  {t:"梳妝台",x:86,y:5,w:11,h:28,v:true},
-  {t:"洗手台",x:28,y:80,w:16,h:14},
-];
+const SHOWER_TIPS = ["四面隔板、水溝蓋刷洗", "垃圾及頭髮清除", "檢查水龍頭及蓮蓬頭"];
 
 /* ============================================================
-   資料層: Firebase 或 本機 (自動偵測)
+   可清潔區域（淋浴間 + 其他設施），座標對應女浴室平面圖
    ============================================================ */
-// 優先使用「設定精靈」儲存的設定，其次才用上方常數
+const ITEMS = [
+  // 淋浴間
+  {id:"14",type:"shower",label:"淋浴間 14",short:"14",x:37.0,y:5,w:7.5,h:21},
+  {id:"13",type:"shower",label:"淋浴間 13",short:"13",x:45.2,y:5,w:7.5,h:21},
+  {id:"12",type:"shower",label:"淋浴間 12",short:"12",x:53.4,y:5,w:7.5,h:21},
+  {id:"11",type:"shower",label:"淋浴間 11",short:"11",x:61.6,y:5,w:7.5,h:21},
+  {id:"10",type:"shower",label:"淋浴間 10",short:"10",x:69.8,y:5,w:7.5,h:21},
+  {id:"9", type:"shower",label:"淋浴間 9", short:"9", x:86.0,y:38,w:11,h:9.5},
+  {id:"8", type:"shower",label:"淋浴間 8", short:"8", x:86.0,y:48.5,w:11,h:9.5},
+  {id:"7", type:"shower",label:"淋浴間 7", short:"7", x:86.0,y:59,w:11,h:9.5},
+  {id:"6", type:"shower",label:"淋浴間 6", short:"6", x:86.0,y:69.5,w:11,h:9.5},
+  {id:"1", type:"shower",label:"淋浴間 1", short:"1", x:46.5,y:72.5,w:8,h:22},
+  {id:"2", type:"shower",label:"淋浴間 2", short:"2", x:55.2,y:72.5,w:8,h:22},
+  {id:"3", type:"shower",label:"淋浴間 3", short:"3", x:63.9,y:72.5,w:8,h:22},
+  {id:"4", type:"shower",label:"淋浴間 4", short:"4", x:72.6,y:72.5,w:8,h:22},
+  {id:"5", type:"shower",label:"淋浴間 5", short:"5", x:81.3,y:67,w:11,h:27.5},
+  // 其他設施
+  {id:"WC1",type:"fix",label:"馬桶 1",short:"馬桶",x:3,y:13,w:14,h:7,  tip:"沖洗並更換衛生紙及垃圾袋"},
+  {id:"WC2",type:"fix",label:"馬桶 2",short:"馬桶",x:3,y:21.5,w:14,h:7,tip:"沖洗並更換衛生紙及垃圾袋"},
+  {id:"WC3",type:"fix",label:"馬桶 3",short:"馬桶",x:3,y:30,w:14,h:7,  tip:"沖洗並更換衛生紙及垃圾袋"},
+  {id:"VA", type:"fix",label:"A梳妝台",short:"梳妝台A",x:3,y:55,w:14,h:8,tip:"桌面頭髮清除、電風扇灰塵清潔"},
+  {id:"G1", type:"fix",label:"大型垃圾桶 1",short:"垃圾桶",x:3.5,y:70,w:8,h:8,round:true,tip:"垃圾袋更換"},
+  {id:"G2", type:"fix",label:"大型垃圾桶 2",short:"垃圾桶",x:12,y:70,w:8,h:8,round:true,tip:"垃圾袋更換"},
+  {id:"VB", type:"fix",label:"B梳妝台",short:"梳妝台B",x:86,y:5,w:11,h:28,v:true,tip:"桌面頭髮清除、電風扇灰塵清潔"},
+  {id:"SINK",type:"fix",label:"洗手台",short:"洗手台",x:28,y:80,w:16,h:14,tip:"檯面與鏡面清潔、保持乾燥"},
+];
+function getItem(id){ return ITEMS.find(i=>i.id===id); }
+function tipsOf(it){ return it.type==="shower" ? SHOWER_TIPS : [it.tip]; }
+
+/* ============================================================
+   資料層
+   ============================================================ */
 let SAVED_CFG=null;
-try{ SAVED_CFG=JSON.parse(localStorage.getItem("dx_fbcfg")||"null"); }catch(e){ SAVED_CFG=null; }
-const ACTIVE_CONFIG = (SAVED_CFG && SAVED_CFG.projectId) ? SAVED_CFG : FIREBASE_CONFIG;
-let useCloud = !!ACTIVE_CONFIG.projectId;
-let db=null, storage=null;
-let stateCache = {};   // {id: {status,by,at,photo}}
-let logsCache = [];    // [{stall,user,role,time,photo}]
-let session = null;    // {role:'staff'|'boss', user}
+try{ SAVED_CFG=JSON.parse(localStorage.getItem("dx_fbcfg")||"null"); }catch(e){}
+const ACTIVE_CONFIG=(SAVED_CFG&&SAVED_CFG.projectId)?SAVED_CFG:FIREBASE_CONFIG;
+let useCloud=!!ACTIVE_CONFIG.projectId;
+let db=null;
+let itemState={};   // {id:{status,by,at,photo}}
+let tasksCache=[];  // [{id,text,order,status,by,at,photo}]
+let logsCache=[];
+let session=null;
+let noticeShown=false;
 
-function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
-function isToday(ts){ if(!ts) return false; const d=new Date(ts); const n=new Date();
+function isToday(ts){ if(!ts) return false; const d=new Date(ts),n=new Date();
   return d.getFullYear()==n.getFullYear()&&d.getMonth()==n.getMonth()&&d.getDate()==n.getDate(); }
 function fmtTime(ts){ const d=new Date(ts);
   return d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getDate()).padStart(2,"0")
     +" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+function doneToday(rec){ return rec && rec.status==="done" && isToday(rec.at); }
 
-/* ---------- Cloud init ---------- */
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+
 async function initCloud(){
   await loadScript("https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js");
   await loadScript("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js");
   firebase.initializeApp(ACTIVE_CONFIG);
   db = firebase.firestore();
-  // 照片以壓縮後的 base64 直接存入 Firestore，免費、不需 Storage
-  // realtime listeners
-  db.collection("showers").onSnapshot(s=>{
-    stateCache={}; s.forEach(d=>stateCache[d.id]=d.data()); renderAll();
-  });
-  db.collection("logs").orderBy("time","desc").limit(300).onSnapshot(s=>{
-    logsCache=[]; s.forEach(d=>logsCache.push(d.data())); renderAll();
-  });
+  db.collection("items").onSnapshot(s=>{ itemState={}; s.forEach(d=>itemState[d.id]=d.data()); renderAll(); });
+  db.collection("tasks").orderBy("order").onSnapshot(s=>{ tasksCache=[]; s.forEach(d=>tasksCache.push(Object.assign({id:d.id},d.data()))); renderAll(); });
+  db.collection("logs").orderBy("time","desc").limit(300).onSnapshot(s=>{ logsCache=[]; s.forEach(d=>logsCache.push(d.data())); renderAll(); });
 }
-function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 
-/* ---------- Local fallback ---------- */
 function localLoad(){
-  try{ stateCache=JSON.parse(localStorage.getItem("dx_state")||"{}"); }catch(e){stateCache={}}
+  try{ itemState=JSON.parse(localStorage.getItem("dx_items")||"{}"); }catch(e){itemState={}}
+  try{ tasksCache=JSON.parse(localStorage.getItem("dx_tasks")||"[]"); }catch(e){tasksCache=[]}
   try{ logsCache=JSON.parse(localStorage.getItem("dx_logs")||"[]"); }catch(e){logsCache=[]}
 }
-function localSave(){
+function localSaveAll(){
   try{
-    localStorage.setItem("dx_state",JSON.stringify(stateCache));
+    localStorage.setItem("dx_items",JSON.stringify(itemState));
+    localStorage.setItem("dx_tasks",JSON.stringify(tasksCache));
     localStorage.setItem("dx_logs",JSON.stringify(logsCache));
-  }catch(e){ /* 儲存空間滿或無法寫入時仍維持畫面更新 */ }
+  }catch(e){}
 }
 
-/* ---------- Write: mark cleaned ---------- */
-async function markCleaned(id, photoDataUrl, onProgress){
-  const now = Date.now();
-  // 照片以壓縮後的 base64 直接存(雲端存進 Firestore, 本機存進瀏覽器), 不需付費 Storage
-  let photoUrl = photoDataUrl || "";
-  if(onProgress) onProgress(1);
-  const rec = { status:"done", by:session.user, at:now, photo:photoUrl };
-  const logEntry = { stall:id, user:session.user, role:"清潔人員", time:now, photo:photoUrl };
+/* ---------- 標記完成（區域 or 交辦） ---------- */
+async function markDone(kind, id, photoDataUrl){
+  const now=Date.now();
+  const photo=photoDataUrl||"";
+  const rec={status:"done",by:session.user,at:now,photo:photo};
+  let label;
+  if(kind==="task"){ const t=tasksCache.find(x=>x.id===id); label="交辦: "+(t?t.text:id); }
+  else { const it=getItem(id); label=it?it.label:id; }
+  const logEntry={item:id,label:label,kind:(kind==="task"?"交辦事項":"清潔"),user:session.user,time:now,photo:photo};
   if(useCloud){
-    await db.collection("showers").doc(String(id)).set(rec,{merge:true});
+    const coll = kind==="task" ? "tasks" : "items";
+    await db.collection(coll).doc(String(id)).set(rec,{merge:true});
     await db.collection("logs").add(logEntry);
-  } else {
-    stateCache[id]=rec; logsCache.unshift(logEntry); renderAll(); localSave();
+  }else{
+    if(kind==="task"){ const t=tasksCache.find(x=>x.id===id); if(t){ t.status="done"; t.by=session.user; t.at=now; t.photo=photo; } }
+    else { itemState[id]=rec; }
+    logsCache.unshift(logEntry); renderAll(); localSaveAll();
   }
 }
 
 async function resetTodayData(){
   if(useCloud){
-    const batch = db.batch();
-    for(let i=1;i<=TOTAL;i++){ batch.set(db.collection("showers").doc(String(i)),{status:"pending"},{merge:true}); }
+    const batch=db.batch();
+    ITEMS.forEach(it=>batch.set(db.collection("items").doc(it.id),{status:"pending"},{merge:true}));
+    tasksCache.forEach(t=>batch.set(db.collection("tasks").doc(t.id),{status:"pending"},{merge:true}));
     await batch.commit();
-  } else {
-    for(let i=1;i<=TOTAL;i++){ if(stateCache[i]) stateCache[i].status="pending"; }
-    localSave(); renderAll();
+  }else{
+    Object.keys(itemState).forEach(k=>{ if(itemState[k]) itemState[k].status="pending"; });
+    tasksCache.forEach(t=>t.status="pending");
+    localSaveAll(); renderAll();
   }
+}
+
+/* ---------- 交辦事項 管理 ---------- */
+async function addTask(){
+  const el=document.getElementById("newTask"); const v=el.value.trim(); if(!v) return;
+  const order=Date.now();
+  if(useCloud){ await db.collection("tasks").add({text:v,order:order,createdAt:order}); }
+  else { tasksCache.push({id:"t"+order,text:v,order:order,createdAt:order}); localSaveAll(); renderAll(); }
+  el.value="";
+}
+async function editTask(id){
+  const t=tasksCache.find(x=>x.id===id); if(!t) return;
+  const v=prompt("修改交辦事項：",t.text); if(v===null) return;
+  const nv=v.trim(); if(!nv) return;
+  if(useCloud){ await db.collection("tasks").doc(id).set({text:nv},{merge:true}); }
+  else { t.text=nv; localSaveAll(); renderAll(); }
+}
+async function deleteTask(id){
+  if(!confirm("確定刪除這項交辦事項?")) return;
+  if(useCloud){ await db.collection("tasks").doc(id).delete(); }
+  else { tasksCache=tasksCache.filter(x=>x.id!==id); localSaveAll(); renderAll(); }
 }
 
 /* ============================================================
@@ -401,16 +425,13 @@ function staffLogin(){
   if(u===STAFF.user && p===STAFF.pass){ enter("staff",u); }
   else{ document.getElementById("loginErr").textContent="帳號或密碼錯誤"; }
 }
-// hidden manager trigger
 document.getElementById("secret").addEventListener("click",()=>{
-  const pw = prompt("主管密碼");
-  if(pw===null) return;
+  const pw=prompt("主管密碼"); if(pw===null) return;
   if(pw===BOSS_PASS){ enter("boss","主管"); }
-  else { document.getElementById("loginErr").textContent="主管密碼錯誤"; }
+  else{ document.getElementById("loginErr").textContent="主管密碼錯誤"; }
 });
-
 function enter(role,user){
-  session={role,user};
+  session={role,user}; noticeShown=false;
   document.getElementById("loginView").classList.add("hidden");
   document.getElementById("appView").classList.remove("hidden");
   const badge=document.getElementById("roleBadge");
@@ -418,7 +439,7 @@ function enter(role,user){
     badge.textContent="清潔人員 · "+user; badge.className="badge staff";
     document.getElementById("staffPanel").classList.remove("hidden");
     document.getElementById("bossPanel").classList.add("hidden");
-  } else {
+  }else{
     badge.textContent="主管"; badge.className="badge boss";
     document.getElementById("staffPanel").classList.add("hidden");
     document.getElementById("bossPanel").classList.remove("hidden");
@@ -429,76 +450,73 @@ function logout(){
   session=null;
   document.getElementById("appView").classList.add("hidden");
   document.getElementById("loginView").classList.remove("hidden");
-  document.getElementById("p").value="";
-  document.getElementById("loginErr").textContent="";
+  document.getElementById("p").value=""; document.getElementById("loginErr").textContent="";
 }
 
 /* ============================================================
-   渲染: 平面圖
+   平面圖
    ============================================================ */
 function buildPlan(){
-  const plan=document.getElementById("plan");
-  plan.innerHTML="";
-  // center label
+  const plan=document.getElementById("plan"); plan.innerHTML="";
   const lab=document.createElement("div");
   lab.className="room-label"; lab.textContent="女浴室";
-  lab.style.left="22%"; lab.style.top="38%"; lab.style.width="56%"; lab.style.height="22%";
+  lab.style.cssText="left:22%;top:38%;width:56%;height:22%";
   plan.appendChild(lab);
-  // fixtures
-  FIXTURES.forEach(f=>{
-    const d=document.createElement("div");
-    d.className="fx"+(f.round?" round":"");
-    d.style.left=f.x+"%"; d.style.top=f.y+"%"; d.style.width=f.w+"%"; d.style.height=f.h+"%";
-    d.textContent=f.t;
-    if(f.v){ d.style.writingMode="vertical-rl"; d.style.letterSpacing="2px"; }
-    plan.appendChild(d);
-  });
-  // stalls
-  STALLS.forEach(s=>{
+  ITEMS.forEach(it=>{
     const b=document.createElement("button");
-    b.className="stall"; b.id="stall-"+s.id;
-    b.style.left=s.x+"%"; b.style.top=s.y+"%"; b.style.width=s.w+"%"; b.style.height=s.h+"%";
-    b.innerHTML='<span class="tick">✓</span>'+s.id+'<small>淋浴間</small>';
-    b.onclick=()=>openClean(s.id);
+    b.id="cell-"+it.id;
+    b.style.left=it.x+"%"; b.style.top=it.y+"%"; b.style.width=it.w+"%"; b.style.height=it.h+"%";
+    if(it.type==="shower"){
+      b.className="stall";
+      b.innerHTML='<span class="tick">✓</span>'+it.short+'<small>淋浴間</small>';
+    }else{
+      b.className="fx"+(it.round?" round":"");
+      b.innerHTML='<span class="tick">✓</span>'+it.short;
+      if(it.v){ b.style.writingMode="vertical-rl"; b.style.letterSpacing="2px"; }
+    }
+    b.onclick=()=>openDo("item",it.id);
     plan.appendChild(b);
   });
 }
-
 function renderPlan(){
-  STALLS.forEach(s=>{
-    const b=document.getElementById("stall-"+s.id); if(!b) return;
-    const st=stateCache[s.id];
-    const done = st && st.status==="done" && isToday(st.at);
-    b.classList.toggle("done",!!done);
+  ITEMS.forEach(it=>{
+    const b=document.getElementById("cell-"+it.id); if(!b) return;
+    const st=itemState[it.id]; const ok=doneToday(st);
+    b.classList.toggle("done",!!ok);
     b.classList.toggle("has-photo", !!(st&&st.photo&&isToday(st.at)));
   });
 }
 
 /* ============================================================
-   清潔彈窗
+   完成登記彈窗（共用：區域 / 交辦）
    ============================================================ */
-let pendingPhoto=null;
-function openClean(id){
-  pendingPhoto=null;
-  const st=stateCache[id];
-  const done = st && st.status==="done" && isToday(st.at);
-  const info = done ? `本日已由 <b>${st.by||"—"}</b> 於 ${fmtTime(st.at)} 清潔` : "尚未清潔";
+let pendingPhoto=null, curKind=null, curId=null;
+function openDo(kind,id){
+  pendingPhoto=null; curKind=kind; curId=id;
+  let title,tipsHtml,info="";
+  if(kind==="task"){
+    const t=tasksCache.find(x=>x.id===id);
+    title="交辦事項"; tipsHtml='<div class="tips"><b>事項內容</b><ul><li>'+(t?escapeHtml(t.text):'')+'</li></ul></div>';
+    if(t&&doneToday(t)) info='本日已由 <b>'+(t.by||'—')+'</b> 於 '+fmtTime(t.at)+' 完成';
+  }else{
+    const it=getItem(id); title=it.label;
+    tipsHtml='<div class="tips"><b>清潔提示</b><ul>'+tipsOf(it).map(t=>'<li>'+t+'</li>').join('')+'</ul></div>';
+    const st=itemState[id];
+    if(doneToday(st)) info='本日已由 <b>'+(st.by||'—')+'</b> 於 '+fmtTime(st.at)+' 清潔';
+    else info='尚未清潔';
+  }
   document.getElementById("modal").innerHTML=`
     <div class="overlay" onclick="if(event.target===this)closeModal()">
       <div class="sheet">
-        <h3>淋浴間 ${id}</h3>
+        <h3>${title}</h3>
         <p class="meta">${info}</p>
-        <div class="photo-box" id="pbox">
-          📷 清潔後照片(選填)<br><span style="font-size:12px">拍照或選擇相片上傳</span>
-        </div>
-        <label class="file-btn">
-          📸 拍照 / 選擇照片
-          <input type="file" accept="image/*" capture="environment" style="display:none" onchange="onPhoto(event)">
-        </label>
-        <div class="upbar" id="upbar"><i></i></div>
+        ${tipsHtml}
+        <div class="photo-box" id="pbox">📷 清潔後照片(選填)<br><span style="font-size:12px">拍照或選擇相片</span></div>
+        <label class="file-btn">📸 拍照 / 選擇照片
+          <input type="file" accept="image/*" capture="environment" style="display:none" onchange="onPhoto(event)"></label>
         <div class="row" style="margin-top:16px">
           <button class="btn ghost" onclick="closeModal()">取消</button>
-          <button class="btn" id="confirmBtn" onclick="confirmClean(${id})">✓ 完成清潔登記</button>
+          <button class="btn" id="confirmBtn" onclick="confirmDo()">✓ 完成登記</button>
         </div>
       </div>
     </div>`;
@@ -509,16 +527,14 @@ function onPhoto(e){
   const file=e.target.files[0]; if(!file) return;
   const reader=new FileReader();
   reader.onload=()=>{
-    // 壓縮照片, 確保安全存進 Firestore (單筆文件上限 1MB)
     const img=new Image();
     img.onload=()=>{
       const max=900; let{width:w,height:h}=img;
       if(w>max||h>max){ const r=Math.min(max/w,max/h); w=w*r|0; h=h*r|0; }
       const c=document.createElement("canvas"); c.width=w;c.height=h;
       c.getContext("2d").drawImage(img,0,0,w,h);
-      // 逐步降低品質直到 < 700KB, 確保不超過 Firestore 文件大小限制
-      let q=0.7, data=c.toDataURL("image/jpeg",q);
-      while(data.length>700000 && q>0.3){ q-=0.1; data=c.toDataURL("image/jpeg",q); }
+      let q=0.7,data=c.toDataURL("image/jpeg",q);
+      while(data.length>700000&&q>0.3){ q-=0.1; data=c.toDataURL("image/jpeg",q); }
       pendingPhoto=data;
       document.getElementById("pbox").innerHTML='✓ 已選擇照片<br><img src="'+pendingPhoto+'">';
     };
@@ -526,20 +542,41 @@ function onPhoto(e){
   };
   reader.readAsDataURL(file);
 }
+async function confirmDo(){
+  const btn=document.getElementById("confirmBtn"); btn.disabled=true; btn.textContent="處理中…";
+  try{ await markDone(curKind,curId,pendingPhoto); closeModal(); toast("已登記完成 ✓"); }
+  catch(err){ btn.disabled=false; btn.textContent="✓ 完成登記"; alert("儲存失敗: "+err.message); }
+}
 
-async function confirmClean(id){
-  const btn=document.getElementById("confirmBtn");
-  btn.disabled=true; btn.textContent="處理中…";
-  const bar=document.getElementById("upbar"); const fill=bar.querySelector("i");
-  if(pendingPhoto && useCloud){ bar.style.display="block"; }
-  try{
-    await markCleaned(id, pendingPhoto, p=>{ fill.style.width=(p*100)+"%"; });
-    closeModal();
-    toast("淋浴間 "+id+" 已登記完成 ✓");
-  }catch(err){
-    btn.disabled=false; btn.textContent="✓ 完成清潔登記";
-    alert("儲存失敗: "+err.message);
-  }
+/* ============================================================
+   交辦事項 通知 + 清潔人員列表
+   ============================================================ */
+function showTaskNotice(){
+  if(!tasksCache.length) return;
+  const list=tasksCache.slice().sort((a,b)=>a.order-b.order)
+    .map((t,i)=>'<li>'+(i+1)+'. '+escapeHtml(t.text)+(doneToday(t)?' ✅':'')+'</li>').join('');
+  document.getElementById("modal").innerHTML=`
+    <div class="overlay" onclick="if(event.target===this)closeModal()">
+      <div class="sheet">
+        <h3>📌 今日交辦事項</h3>
+        <p class="meta">請於完成後，到下方逐項點選「完成」並拍照存檔。</p>
+        <div class="tips"><ul style="padding-left:18px">${list}</ul></div>
+        <button class="btn" style="width:100%;margin-top:8px" onclick="closeModal()">我知道了</button>
+      </div>
+    </div>`;
+}
+function renderMemoStaff(){
+  const box=document.getElementById("memoArea");
+  if(!tasksCache.length){ box.innerHTML=""; return; }
+  const rows=tasksCache.slice().sort((a,b)=>a.order-b.order).map(t=>{
+    const ok=doneToday(t);
+    return `<div class="task-staff ${ok?'done':''}">
+      <div class="t">${escapeHtml(t.text)}${ok?'<small>✓ '+(t.by||'')+' · '+fmtTime(t.at)+'</small>':''}</div>
+      ${ok&&t.photo?`<img src="${t.photo}" onclick="showLightbox('${cssUrl(t.photo)}')">`:''}
+      <button class="btn ${ok?'ghost':''} sm" onclick="openDo('task','${t.id}')">${ok?'已完成':'完成'}</button>
+    </div>`;
+  }).join("");
+  box.innerHTML=`<div class="memo"><h4>📌 今日交辦事項備忘錄</h4>${rows}</div>`;
 }
 
 /* ============================================================
@@ -547,129 +584,96 @@ async function confirmClean(id){
    ============================================================ */
 function bossTab(t){
   document.getElementById("bossStatus").classList.toggle("hidden",t!=="status");
+  document.getElementById("bossTasks").classList.toggle("hidden",t!=="tasks");
   document.getElementById("bossLog").classList.toggle("hidden",t!=="log");
   document.getElementById("tabStatus").classList.toggle("active",t==="status");
+  document.getElementById("tabTasks").classList.toggle("active",t==="tasks");
   document.getElementById("tabLog").classList.toggle("active",t==="log");
 }
-
 function renderBoss(){
-  // status grid
+  // 計數
+  let done=0; ITEMS.forEach(it=>{ if(doneToday(itemState[it.id])) done++; });
+  document.getElementById("cDone").textContent=done;
+  document.getElementById("cLeft").textContent=ITEMS.length-done;
+  // 淋浴間
   const grid=document.getElementById("grid14"); grid.innerHTML="";
-  let done=0;
-  STALLS.slice().sort((a,b)=>a.id-b.id).forEach(s=>{
-    const st=stateCache[s.id];
-    const ok = st && st.status==="done" && isToday(st.at);
-    if(ok) done++;
-    const d=document.createElement("div");
-    d.className="mini"+(ok?" done":"");
-    d.innerHTML=s.id+(ok?'<small>'+ (st.by||'') +'</small>':'<small>未清</small>');
-    d.title = ok ? (st.by+" "+fmtTime(st.at)) : "尚未清潔";
+  ITEMS.filter(i=>i.type==="shower").slice().sort((a,b)=>Number(a.id)-Number(b.id)).forEach(it=>{
+    const st=itemState[it.id]; const ok=doneToday(st);
+    const d=document.createElement("div"); d.className="mini"+(ok?" done":"");
+    d.innerHTML=it.short+(ok?'<small>'+(st.by||'')+'</small>':'<small>未清</small>');
+    d.title=ok?(st.by+" "+fmtTime(st.at)):"尚未清潔";
     d.onclick=()=>{ if(ok&&st.photo) showLightbox(st.photo); };
     grid.appendChild(d);
   });
-  document.getElementById("cDone").textContent=done;
-  document.getElementById("cLeft").textContent=TOTAL-done;
-
-  // log
+  // 其他區域
+  const fl=document.getElementById("fixList"); fl.innerHTML="";
+  ITEMS.filter(i=>i.type==="fix").forEach(it=>{
+    const st=itemState[it.id]; const ok=doneToday(st);
+    const row=document.createElement("div"); row.className="arow"+(ok?" done":"");
+    row.innerHTML=`<div class="ic">${it.short}</div>
+      <div class="tx"><b>${it.label}</b><div>${ok?('✓ '+(st.by||'')+' · '+fmtTime(st.at)):it.tip}</div></div>
+      ${ok&&st.photo?`<img src="${st.photo}" onclick="showLightbox('${cssUrl(st.photo)}')">`:''}
+      <span class="st ${ok?'ok':'no'}">${ok?'已清潔':'未清潔'}</span>`;
+    fl.appendChild(row);
+  });
+  renderTaskAdmin();
+  renderLog();
+}
+function renderTaskAdmin(){
+  const box=document.getElementById("taskAdminList");
+  const list=tasksCache.slice().sort((a,b)=>a.order-b.order);
+  if(!list.length){ box.innerHTML='<div class="empty">尚無交辦事項，於上方新增</div>'; return; }
+  box.innerHTML=list.map((t,i)=>{
+    const ok=doneToday(t);
+    return `<div class="admin-task">
+      <div class="top">
+        <b>${i+1}. ${escapeHtml(t.text)}</b>
+        <button class="icon-btn" onclick="editTask('${t.id}')">編輯</button>
+        <button class="icon-btn del" onclick="deleteTask('${t.id}')">刪除</button>
+      </div>
+      <div class="sub">
+        <span class="st ${ok?'ok':'no'}">${ok?'已完成':'待處理'}</span>
+        ${ok?('<span>'+(t.by||'')+' · '+fmtTime(t.at)+'</span>'):''}
+        ${ok&&t.photo?`<img src="${t.photo}" onclick="showLightbox('${cssUrl(t.photo)}')">`:''}
+      </div>
+    </div>`;
+  }).join("");
+}
+function renderLog(){
   const list=document.getElementById("logList"); list.innerHTML="";
   const logs=logsCache.slice().sort((a,b)=>b.time-a.time);
-  if(!logs.length){ list.innerHTML='<div class="empty">尚無清潔紀錄</div>'; return; }
+  if(!logs.length){ list.innerHTML='<div class="empty">尚無紀錄</div>'; return; }
   logs.forEach(l=>{
     const it=document.createElement("div"); it.className="log-item";
-    it.innerHTML=`<div class="ic">${l.stall}</div>
-      <div class="tx"><b>淋浴間 ${l.stall} 已清潔</b>
+    const isTask=l.kind==="交辦事項";
+    it.innerHTML=`<div class="ic ${isTask?'task':''}">${isTask?'交辦':(getItem(l.item)?getItem(l.item).short:l.item)}</div>
+      <div class="tx"><b>${escapeHtml(l.label||'')} 已完成</b>
         <div>👤 ${l.user} · ${fmtTime(l.time)}</div></div>
-      ${l.photo?`<img src="${l.photo}" onclick="showLightbox('${l.photo}')">`:''}`;
+      ${l.photo?`<img src="${l.photo}" onclick="showLightbox('${cssUrl(l.photo)}')">`:''}`;
     list.appendChild(it);
   });
 }
-
 function resetToday(){
-  if(confirm("確定要將14間淋浴間重設為「尚未清潔」?(通常每日開始時使用,過往紀錄會保留)")){
-    resetTodayData();
-  }
+  if(confirm("確定將所有區域與交辦事項重設為「未完成」?(每日開始時使用,歷史紀錄保留)")) resetTodayData();
 }
-
 function exportCSV(){
-  let csv="淋浴間,清潔人員,時間,有照片\n";
+  let csv="類別,項目,人員,時間,有照片\n";
   logsCache.slice().sort((a,b)=>b.time-a.time).forEach(l=>{
-    csv+=`${l.stall},${l.user},${fmtTime(l.time)},${l.photo?"是":"否"}\n`;
+    csv+=`${l.kind||'清潔'},${(l.label||'').replace(/,/g,' ')},${l.user},${fmtTime(l.time)},${l.photo?'是':'否'}\n`;
   });
   const blob=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
   a.download="清潔紀錄_"+todayKey()+".csv"; a.click();
 }
 
-/* ---------- lightbox ---------- */
+/* ---------- 工具 ---------- */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function cssUrl(s){ return String(s).replace(/'/g,"\\'"); }
 function showLightbox(src){
-  document.getElementById("lb").innerHTML=
-    `<div class="lightbox" onclick="document.getElementById('lb').innerHTML=''"><img src="${src}"></div>`;
+  document.getElementById("lb").innerHTML=`<div class="lightbox" onclick="document.getElementById('lb').innerHTML=''"><img src="${src}"></div>`;
 }
-
-/* ============================================================
-   雲端設定精靈 (不需改程式碼, 貼上 Firebase 設定即可)
-   ============================================================ */
-function openSetup(){
-  const mode = useCloud ? '<span style="color:#6ee7b7">● 目前: 雲端同步已啟用</span>'
-                        : '<span style="color:#fcd34d">● 目前: 本機模式 (尚未連雲端)</span>';
-  const cur = (SAVED_CFG&&SAVED_CFG.projectId)?('專案: '+SAVED_CFG.projectId):'';
-  document.getElementById("modal").innerHTML=`
-  <div class="overlay" onclick="if(event.target===this)closeModal()">
-    <div class="sheet" style="max-height:88vh;overflow:auto">
-      <h3>⚙️ 雲端同步設定</h3>
-      <p class="meta">${mode}　${cur}</p>
-      <ol style="font-size:13px;color:#cbd5e1;line-height:1.9;padding-left:20px;margin:4px 0 14px">
-        <li>到 <b>console.firebase.google.com</b> 建立免費專案</li>
-        <li>開啟 <b>Firestore Database</b>(測試模式)。照片直接存在這裡，<b>不需要付費的 Storage</b></li>
-        <li>專案設定 → 新增「網頁應用程式 <b>&lt;/&gt;</b>」</li>
-        <li>把出現的 <b>firebaseConfig</b> 整段複製，貼到下方框內</li>
-      </ol>
-      <textarea id="cfgInput" placeholder='貼上整段，例如：\nconst firebaseConfig = {\n  apiKey: "AIza...",\n  authDomain: "xxx.firebaseapp.com",\n  projectId: "xxx",\n  storageBucket: "xxx.appspot.com",\n  messagingSenderId: "123",\n  appId: "1:123:web:abc"\n};'
-        style="width:100%;height:150px;border-radius:10px;border:1px solid var(--line);background:#0b1324;color:var(--text);font-size:12.5px;padding:12px;font-family:monospace"></textarea>
-      <div class="row" style="margin-top:12px">
-        <button class="btn ghost" onclick="closeModal()">關閉</button>
-        <button class="btn" onclick="saveSetup()">儲存並啟用雲端</button>
-      </div>
-      ${(SAVED_CFG&&SAVED_CFG.projectId)?'<button class="btn ghost sm" style="width:100%;margin-top:10px" onclick="clearSetup()">移除設定，改回本機模式</button>':''}
-      <details style="margin-top:16px;font-size:12.5px;color:var(--muted)">
-        <summary style="cursor:pointer">建議的 Firestore 安全規則(內部使用)</summary>
-        <pre style="white-space:pre-wrap;background:#0b1324;padding:10px;border-radius:8px;font-size:11.5px">rules_version = '2';
-service cloud.firestore {
-  match /databases/{db}/documents {
-    match /{doc=**} { allow read, write: if true; }
-  }
-}</pre>
-      </details>
-    </div>
-  </div>`;
-}
-function parseFbConfig(text){
-  const m=text.match(/\{[\s\S]*\}/);
-  if(!m) throw new Error("找不到設定內容(需包含 { } )");
-  let obj;
-  try{ obj=JSON.parse(m[0]); }
-  catch(e){ obj=(new Function("return ("+m[0]+")"))(); }
-  if(!obj || !obj.projectId) throw new Error("設定缺少 projectId");
-  return obj;
-}
-function saveSetup(){
-  const t=document.getElementById("cfgInput").value.trim();
-  if(!t){ alert("請先貼上 Firebase 設定"); return; }
-  try{
-    const cfg=parseFbConfig(t);
-    localStorage.setItem("dx_fbcfg",JSON.stringify(cfg));
-    alert("✓ 雲端設定已儲存！\n專案: "+cfg.projectId+"\n將重新載入以啟用雲端同步。");
-    location.reload();
-  }catch(e){ alert("設定格式有誤: "+e.message); }
-}
-function clearSetup(){
-  if(confirm("確定移除雲端設定、改回本機模式?")){ localStorage.removeItem("dx_fbcfg"); location.reload(); }
-}
-
-/* ---------- toast ---------- */
 function toast(msg){
-  const t=document.createElement("div");
-  t.textContent=msg;
+  const t=document.createElement("div"); t.textContent=msg;
   t.style.cssText="position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#16a34a;color:#fff;padding:12px 20px;border-radius:12px;z-index:80;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.4)";
   document.body.appendChild(t);
   setTimeout(()=>{t.style.transition=".4s";t.style.opacity="0";},1600);
@@ -681,8 +685,12 @@ function toast(msg){
    ============================================================ */
 function renderAll(){
   if(!session) return;
-  if(session.role==="staff") renderPlan();
-  else renderBoss();
+  if(session.role==="staff"){
+    renderPlan(); renderMemoStaff();
+    if(!noticeShown && tasksCache.length){ noticeShown=true; showTaskNotice(); }
+  }else{
+    renderBoss();
+  }
 }
 
 /* ============================================================
@@ -694,12 +702,10 @@ function renderAll(){
   if(useCloud){
     tag.textContent="雲端同步"; tag.className="cloud-tag";
     try{ await initCloud(); }
-    catch(e){ useCloud=false; tag.textContent="本機(雲端連線失敗)"; tag.className="cloud-tag local"; localLoad(); }
-  } else {
-    tag.textContent="本機儲存"; tag.className="cloud-tag local";
-    localLoad();
+    catch(e){ useCloud=false; tag.textContent="本機(連線失敗)"; tag.className="cloud-tag local"; localLoad(); renderAll(); }
+  }else{
+    tag.textContent="本機儲存"; tag.className="cloud-tag local"; localLoad();
   }
-  // allow Enter to login
   document.getElementById("p").addEventListener("keydown",e=>{if(e.key==="Enter")staffLogin();});
 })();
 </script>
