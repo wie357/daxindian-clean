@@ -377,7 +377,10 @@ function targetOf(it){ if(!it) return 1; if(it.type==="shower") return 3; if(it.
 function ageOf(st, target){
   const T=target||1;
   const dd=(st&&st.at)?daysSince(st.at):Infinity;
-  if(dd===0) return {dd,colorClass:"c-done",label:"今日已清",tag:"✓",priority:false,warn:false};
+  if(dd===0){
+    if(st && st.status==="checked") return {dd,colorClass:"",label:"主管已確認",tag:"已確認",priority:false,warn:false,checked:true};
+    return {dd,colorClass:"c-done",label:"今日已清",tag:"✓",priority:false,warn:false};
+  }
   if(dd===Infinity) return {dd,colorClass:"",label:"尚未清潔",tag:"未清",priority:false,warn:false};
   const over=dd-T;
   if(over<0) return {dd,colorClass:"",label:"週期內（"+dd+"天）",tag:dd+"天",priority:false,warn:false};
@@ -423,11 +426,12 @@ function localSaveAll(){
 async function markDone(kind, id, photoDataUrl){
   const now=Date.now();
   const photo=photoDataUrl||"";
-  const rec={status:"done",by:session.user,at:now,photo:photo};
+  const isCheck=(session.role==="boss" && kind==="item");   // 主管「確認已檢查」：重設週期但不算清潔、顏色回初始灰
+  const rec={status:(isCheck?"checked":"done"),by:session.user,at:now,photo:photo};
   let label;
   if(kind==="task"){ const t=tasksCache.find(x=>x.id===id); label="交辦: "+(t?t.text:id); }
   else { const it=getItem(id); label=it?it.label:id; }
-  const logEntry={item:id,label:label,kind:(kind==="task"?"交辦事項":"清潔"),user:session.user,time:now,photo:photo};
+  const logEntry={item:id,label:label,kind:(kind==="task"?"交辦事項":(isCheck?"主管確認":"清潔")),user:session.user,time:now,photo:photo};
   if(useCloud){
     const coll = kind==="task" ? "tasks" : "items";
     await db.collection(coll).doc(String(id)).set(rec,{merge:true});
@@ -574,7 +578,8 @@ function openDo(kind,id){
     const it=getItem(id); title=it.label;
     tipsHtml='<div class="tips"><b>清潔提示</b><ul>'+tipsOf(it).map(t=>'<li>'+t+'</li>').join('')+'</ul></div>';
     const st=itemState[id]; const a=ageOf(st, targetOf(it));
-    if(a.dd===0) info='本日已由 <b>'+(st.by||'—')+'</b> 於 '+fmtTime(st.at)+' 清潔';
+    if(a.dd===0 && a.checked) info='主管已於 '+fmtTime(st.at)+' 確認檢查（已重設週期、回到初始狀態）';
+    else if(a.dd===0) info='本日已由 <b>'+(st.by||'—')+'</b> 於 '+fmtTime(st.at)+' 清潔';
     else if(a.dd===Infinity) info='尚未有清潔紀錄（目標：每 '+targetOf(it)+' 天清一次）';
     else info=a.label+'　上次：'+fmtTime(st.at)+'（目標每 '+targetOf(it)+' 天）';
     if(a.priority) info='<span style="color:#fca5a5;font-weight:800">⚠️ 已超過清潔週期，請優先處理！</span><br>'+info;
@@ -669,7 +674,7 @@ function bossTab(t){
 }
 function renderBoss(){
   // 計數
-  let done=0,overdue=0; ITEMS.forEach(it=>{ const a=ageOf(itemState[it.id],targetOf(it)); if(a.dd===0) done++; else if(a.warn) overdue++; });
+  let done=0,overdue=0; ITEMS.forEach(it=>{ const st=itemState[it.id]; const a=ageOf(st,targetOf(it)); if(a.dd===0 && st && st.status==="done") done++; else if(a.warn) overdue++; });
   document.getElementById("cDone").textContent=done;
   document.getElementById("cLeft").textContent=overdue;
   // 淋浴間
@@ -677,20 +682,20 @@ function renderBoss(){
   ITEMS.filter(i=>i.type==="shower").slice().sort((a,b)=>Number(a.id)-Number(b.id)).forEach(it=>{
     const st=itemState[it.id]; const a=ageOf(st, targetOf(it));
     const d=document.createElement("div"); d.className="mini"+(a.colorClass?(" "+a.colorClass):"")+(a.priority?" priority":"");
-    d.innerHTML=it.short+'<small>'+(a.dd===0?(st&&st.by?st.by:'✓'):a.tag)+'</small>';
-    d.title=a.dd===0?((st.by||'')+" "+fmtTime(st.at)):(a.dd===Infinity?"尚未清潔":a.label+"（"+a.dd+"天）");
+    d.innerHTML=it.short+'<small>'+(a.dd===0?(a.checked?'主管確認':(st&&st.by?st.by:'✓')):a.tag)+'</small>';
+    d.title=a.dd===0?((a.checked?'主管已確認 ':'')+(st.by||'')+" "+fmtTime(st.at)):(a.dd===Infinity?"尚未清潔":a.label+"（"+a.dd+"天）");
     d.onclick=()=>openDo("item",it.id);
     grid.appendChild(d);
   });
   // 其他區域
   const fl=document.getElementById("fixList"); fl.innerHTML="";
   ITEMS.filter(i=>i.type==="fix").forEach(it=>{
-    const st=itemState[it.id]; const a=ageOf(st, targetOf(it)); const ok=a.dd===0;
-    const row=document.createElement("div"); row.className="arow"+(ok?" done":"");
-    const pillCls=ok?'ok':(a.priority?'r':(a.warn?'no':(a.colorClass==='c-due'?'due':'neu')));
+    const st=itemState[it.id]; const a=ageOf(st, targetOf(it)); const ok=a.dd===0; const cleaned=ok&&st&&st.status==="done";
+    const row=document.createElement("div"); row.className="arow"+(cleaned?" done":"");
+    const pillCls=cleaned?'ok':(a.checked?'neu':(a.priority?'r':(a.warn?'no':(a.colorClass==='c-due'?'due':'neu'))));
     const pillTxt=a.label;
     row.innerHTML=`<div class="ic ${a.colorClass}">${it.short}</div>
-      <div class="tx"><b>${it.label}</b><div>${ok?('✓ '+(st.by||'')+' · '+fmtTime(st.at)):it.tip}</div></div>
+      <div class="tx"><b>${it.label}</b><div>${ok?((a.checked?'主管確認 ':'✓ ')+(st.by||'')+' · '+fmtTime(st.at)):it.tip}</div></div>
       ${ok&&st.photo?`<img src="${st.photo}" onclick="event.stopPropagation();showLightbox('${cssUrl(st.photo)}')">`:''}
       <span class="st ${pillCls}">${pillTxt}</span>`;
     row.style.cursor="pointer"; row.onclick=()=>openDo("item",it.id);
