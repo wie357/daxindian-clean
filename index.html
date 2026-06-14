@@ -162,7 +162,7 @@
   .empty{color:var(--muted);text-align:center;padding:24px;font-size:14px}
 
   .tabbar{display:flex;gap:8px;margin:16px 4px 4px}
-  .tabbar .btn{flex:1;padding:9px 6px;font-size:13.5px}
+  .tabbar .btn{flex:1;padding:8px 3px;font-size:12.5px}
   .tabbar .btn.ghost.active{background:var(--accent);color:#fff}
 
   .memo{background:linear-gradient(135deg,#1e3a5f,#1e293b);border:1px solid #2563eb55;border-radius:14px;padding:14px 16px;margin:0 4px 8px}
@@ -223,6 +223,8 @@
   <!-- STAFF -->
   <div class="wrap" id="staffPanel">
     <div id="memoArea"></div>
+    <button class="btn" style="width:100%;background:#b45309;margin:0 0 10px" onclick="openFaultReport()">🔧 設備故障回報</button>
+    <div id="faultStaff"></div>
     <div class="section-title">🧽 點選你已完成清潔的區域</div>
     <p class="hint">完成清潔後，直接點選對應區域並可上傳照片。完成的區域會變成<strong style="color:var(--done)">綠色</strong>。</p>
     <div class="plan-shell"><div class="plan" id="plan"></div></div>
@@ -241,6 +243,7 @@
     <div class="tabbar">
       <button class="btn ghost active" id="tabStatus" onclick="bossTab('status')">清潔狀況</button>
       <button class="btn ghost" id="tabTasks" onclick="bossTab('tasks')">交辦事項</button>
+      <button class="btn ghost" id="tabFault" onclick="bossTab('fault')">故障回報</button>
       <button class="btn ghost" id="tabLog" onclick="bossTab('log')">訊息紀錄</button>
     </div>
 
@@ -274,6 +277,11 @@
         <button class="btn" onclick="addTask()">＋ 新增</button>
       </div>
       <div id="taskAdminList"></div>
+    </div>
+
+    <div id="bossFault" class="hidden">
+      <div class="section-title" style="margin-top:6px">🔧 設備故障回報</div>
+      <div id="faultList"></div>
     </div>
 
     <div id="bossLog" class="hidden">
@@ -360,6 +368,7 @@ let db=null, listenersStarted=false;
 let itemState={};   // {id:{status,by,at,photo}}
 let tasksCache=[];  // [{id,text,order,status,by,at,photo}]
 let logsCache=[];
+let faultsCache=[];  // [{id,type,note,by,time,photo,status,fixedBy,fixedAt}]
 let session=null;
 let noticeShown=false;
 
@@ -372,7 +381,7 @@ function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth(
 function doneToday(rec){ return rec && rec.status==="done" && isToday(rec.at); }
 function daysSince(ts){ if(!ts) return Infinity; const a=new Date(ts); a.setHours(0,0,0,0); const n=new Date(); n.setHours(0,0,0,0); return Math.round((n-a)/86400000); }
 // 各區清潔週期（天）：淋浴間 3 天；梳妝台 2 天；馬桶/垃圾桶/洗手台 每天
-function targetOf(it){ if(!it) return 1; if(it.type==="shower") return 3; if(it.id==="VA"||it.id==="VB") return 2; return 1; }
+function targetOf(it){ if(!it) return 1; if(it.type==="shower") return 3; return 1; } // 淋浴間每3天；其他（馬桶/垃圾桶/洗手台/梳妝台）每天
 // 顏色依「是否超過該區清潔週期」決定，週期內不報警
 function ageOf(st, target){
   const T=target||1;
@@ -407,18 +416,21 @@ function startCloudListeners(){
   db.collection("items").onSnapshot(s=>{ itemState={}; s.forEach(d=>itemState[d.id]=d.data()); renderAll(); });
   db.collection("tasks").orderBy("order").onSnapshot(s=>{ tasksCache=[]; s.forEach(d=>tasksCache.push(Object.assign({id:d.id},d.data()))); renderAll(); });
   db.collection("logs").orderBy("time","desc").limit(300).onSnapshot(s=>{ logsCache=[]; s.forEach(d=>logsCache.push(d.data())); renderAll(); });
+  db.collection("faults").orderBy("time","desc").limit(200).onSnapshot(s=>{ faultsCache=[]; s.forEach(d=>faultsCache.push(Object.assign({id:d.id},d.data()))); renderAll(); });
 }
 
 function localLoad(){
   try{ itemState=JSON.parse(localStorage.getItem("dx_items")||"{}"); }catch(e){itemState={}}
   try{ tasksCache=JSON.parse(localStorage.getItem("dx_tasks")||"[]"); }catch(e){tasksCache=[]}
   try{ logsCache=JSON.parse(localStorage.getItem("dx_logs")||"[]"); }catch(e){logsCache=[]}
+  try{ faultsCache=JSON.parse(localStorage.getItem("dx_faults")||"[]"); }catch(e){faultsCache=[]}
 }
 function localSaveAll(){
   try{
     localStorage.setItem("dx_items",JSON.stringify(itemState));
     localStorage.setItem("dx_tasks",JSON.stringify(tasksCache));
     localStorage.setItem("dx_logs",JSON.stringify(logsCache));
+    localStorage.setItem("dx_faults",JSON.stringify(faultsCache));
   }catch(e){}
 }
 
@@ -667,9 +679,11 @@ function renderMemoStaff(){
 function bossTab(t){
   document.getElementById("bossStatus").classList.toggle("hidden",t!=="status");
   document.getElementById("bossTasks").classList.toggle("hidden",t!=="tasks");
+  document.getElementById("bossFault").classList.toggle("hidden",t!=="fault");
   document.getElementById("bossLog").classList.toggle("hidden",t!=="log");
   document.getElementById("tabStatus").classList.toggle("active",t==="status");
   document.getElementById("tabTasks").classList.toggle("active",t==="tasks");
+  document.getElementById("tabFault").classList.toggle("active",t==="fault");
   document.getElementById("tabLog").classList.toggle("active",t==="log");
 }
 function renderBoss(){
@@ -784,6 +798,73 @@ async function purgePhotos(days){
   }catch(e){ alert("清理失敗："+e.message); }
 }
 
+/* ---------- 故障回報 ---------- */
+const FAULT_TYPES=["水龍頭","蓮蓬頭","投幣式寄物櫃","馬桶","其他"];
+function openFaultReport(){
+  pendingPhoto=null;
+  const opts=FAULT_TYPES.map(t=>'<option value="'+t+'">'+t+'</option>').join("");
+  const fs='width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:#0b1324;color:var(--text);font-size:15px;margin-top:6px';
+  document.getElementById("modal").innerHTML=`
+    <div class="overlay" onclick="if(event.target===this)closeModal()">
+      <div class="sheet">
+        <h3>🔧 設備故障回報</h3>
+        <p class="meta">回報後，主管會在「故障回報」分頁看到並安排處理</p>
+        <label style="color:var(--muted);font-size:13px">故障項目</label>
+        <select id="faultType" style="${fs}">${opts}</select>
+        <label style="color:var(--muted);font-size:13px;display:block;margin-top:12px">位置 / 說明</label>
+        <input id="faultNote" style="${fs}" placeholder="例：3號淋浴間蓮蓬頭沒水">
+        <div class="photo-box" id="pbox" style="margin-top:14px">📷 故障照片(選填)<br><span style="font-size:12px">拍照或選擇相片</span></div>
+        <label class="file-btn">📸 拍照 / 選擇照片
+          <input type="file" accept="image/*" capture="environment" style="display:none" onchange="onPhoto(event)"></label>
+        <div class="row" style="margin-top:16px">
+          <button class="btn ghost" onclick="closeModal()">取消</button>
+          <button class="btn" id="faultBtn" style="background:#b45309" onclick="submitFault()">送出回報</button>
+        </div>
+      </div>
+    </div>`;
+}
+async function submitFault(){
+  const type=document.getElementById("faultType").value;
+  const note=document.getElementById("faultNote").value.trim();
+  const btn=document.getElementById("faultBtn"); btn.disabled=true; btn.textContent="送出中…";
+  const now=Date.now();
+  const rec={type:type,note:note,by:session.user,time:now,photo:pendingPhoto||"",status:"open"};
+  try{
+    if(useCloud){ await db.collection("faults").add(rec); }
+    else { faultsCache.unshift(Object.assign({id:"f"+now},rec)); localSaveAll(); renderAll(); }
+    closeModal(); toast("已送出故障回報 ✓");
+  }catch(e){ btn.disabled=false; btn.textContent="送出回報"; alert("送出失敗："+e.message); }
+}
+async function markFixed(id){
+  if(!confirm("確定標記為『已修復』?")) return;
+  const now=Date.now();
+  try{
+    if(useCloud){ await db.collection("faults").doc(id).set({status:"fixed",fixedBy:session.user,fixedAt:now},{merge:true}); }
+    else { const f=faultsCache.find(x=>x.id===id); if(f){f.status="fixed";f.fixedBy=session.user;f.fixedAt=now;} localSaveAll(); renderAll(); }
+  }catch(e){ alert("更新失敗："+e.message); }
+}
+function faultRowHtml(f,mgr){
+  const fixed=f.status==="fixed";
+  return '<div class="arow '+(fixed?'done':'')+'">'+
+    '<div class="ic" style="background:'+(fixed?'#16a34a':'#b45309')+';color:#fff">'+(fixed?'已修':'故障')+'</div>'+
+    '<div class="tx"><b>'+escapeHtml(f.type)+(f.note?(' · '+escapeHtml(f.note)):'')+'</b>'+
+    '<div>👤 '+escapeHtml(f.by||'')+' · '+fmtTime(f.time)+(fixed?(' · 已由 '+escapeHtml(f.fixedBy||'')+' 修復'):'')+'</div></div>'+
+    (f.photo?'<img src="'+f.photo+'" onclick="showLightbox(\''+cssUrl(f.photo)+'\')">':'')+
+    ((mgr&&!fixed)?'<button class="btn sm" onclick="markFixed(\''+f.id+'\')">標記已修復</button>':'<span class="st '+(fixed?'ok':'r')+'">'+(fixed?'已修復':'待處理')+'</span>')+
+    '</div>';
+}
+function renderFaults(){
+  const open=faultsCache.filter(f=>f.status!=="fixed");
+  const tb=document.getElementById("tabFault"); if(tb) tb.textContent="故障回報"+(open.length?("("+open.length+")"):"");
+  const box=document.getElementById("faultList");
+  if(box){
+    const list=faultsCache.slice().sort((a,b)=>((a.status==="fixed")-(b.status==="fixed"))||(b.time-a.time));
+    box.innerHTML=list.length?list.map(f=>faultRowHtml(f,true)).join(""):'<div class="empty">目前沒有故障回報</div>';
+  }
+  const sb=document.getElementById("faultStaff");
+  if(sb){ sb.innerHTML=open.length?('<div class="memo" style="background:#3a2a12;border-color:#b4530955"><h4>🔧 目前待修：'+open.length+' 件</h4>'+open.map(f=>faultRowHtml(f,false)).join("")+'</div>'):''; }
+}
+
 /* ---------- 工具 ---------- */
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function cssUrl(s){ return String(s).replace(/'/g,"\\'"); }
@@ -803,6 +884,7 @@ function toast(msg){
    ============================================================ */
 function renderAll(){
   if(!session) return;
+  renderFaults();
   if(session.role==="staff"){
     renderPlan(); renderMemoStaff();
     if(!noticeShown && tasksCache.length){ noticeShown=true; showTaskNotice(); }
