@@ -99,6 +99,8 @@
   .st.r{background:#7f1d1d;color:#fecaca}
   .st.neu{background:#334155;color:#cbd5e1}
   .st.due{background:#075985;color:#bae6fd}
+  .bar{height:8px;background:#0b1324;border-radius:5px;overflow:hidden;margin-top:6px}
+  .bar i{display:block;height:100%;transition:.3s}
   .stall.has-photo::after,.fx.has-photo::after{content:"📷";position:absolute;top:3px;right:4px;font-size:2.4cqw}
   .stall .tick,.fx .tick{position:absolute;top:2px;left:5px;font-size:2.6cqw;display:none}
   .stall.c-done .tick,.fx.c-done .tick{display:block}
@@ -252,8 +254,16 @@
       <div class="grid14" id="grid14"></div>
       <div class="section-title">🧹 其他區域</div>
       <div id="fixList"></div>
+      <div class="section-title">📦 儲存空間</div>
+      <div id="storageInfo" class="hint" style="margin:0 4px">—</div>
+      <div style="display:flex;gap:8px;margin:8px 4px 0;flex-wrap:wrap">
+        <button class="btn ghost sm" onclick="purgePhotos(90)">清理90天前照片</button>
+        <button class="btn ghost sm" onclick="purgePhotos(60)">清理60天前照片</button>
+        <button class="btn ghost sm" onclick="purgePhotos(30)">清理30天前照片</button>
+      </div>
       <div style="display:flex;gap:10px;margin:16px 4px 30px">
         <button class="btn ghost sm" onclick="exportCSV()">匯出紀錄CSV</button>
+        <button class="btn ghost sm" onclick="refreshStorage()">重新整理用量</button>
       </div>
     </div>
 
@@ -501,6 +511,7 @@ function enter(role,user){
     badge.textContent="主管"; badge.className="badge boss";
     document.getElementById("staffPanel").classList.add("hidden");
     document.getElementById("bossPanel").classList.remove("hidden");
+    refreshStorage();
   }
   renderAll();
 }
@@ -733,6 +744,39 @@ function exportCSV(){
   const blob=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
   a.download="清潔紀錄_"+todayKey()+".csv"; a.click();
+}
+
+/* ---------- 儲存空間管理 ---------- */
+async function refreshStorage(){
+  const el=document.getElementById("storageInfo"); if(!el) return;
+  el.textContent="計算中…";
+  let count=0;
+  try{
+    if(useCloud){ const c=await db.collection("logs").count().get(); count=c.data().count; }
+    else { count=logsCache.length; }
+  }catch(e){ count=logsCache.length; }
+  const mb=count*0.15;            // 每筆紀錄含照片粗估 ~150KB
+  const pct=Math.min(100, mb/1024*100);
+  const color=pct>80?'#dc2626':(pct>50?'#f59e0b':'#22c55e');
+  el.innerHTML='紀錄 <b>'+count+'</b> 筆，預估用量約 <b>'+mb.toFixed(0)+' MB</b> / 1024 MB（粗估）'+
+    '<div class="bar"><i style="width:'+Math.max(2,pct)+'%;background:'+color+'"></i></div>'+
+    (pct>80?'<div style="color:#fca5a5;margin-top:6px">⚠️ 空間偏高，建議用下方按鈕清理舊照片</div>':'');
+}
+async function purgePhotos(days){
+  if(!confirm("確定刪除 "+days+" 天前的所有照片?\n（清潔紀錄文字會保留，只移除照片以釋放空間，無法復原）")) return;
+  const cutoff=Date.now()-days*86400000; let removed=0;
+  try{
+    if(useCloud){
+      const snap=await db.collection("logs").where("time","<",cutoff).get();
+      const docs=snap.docs.filter(d=>{ const p=d.data().photo; return p&&p.length>0; });
+      for(let i=0;i<docs.length;i+=400){ const b=db.batch(); docs.slice(i,i+400).forEach(d=>b.update(d.ref,{photo:""})); await b.commit(); }
+      removed=docs.length;
+    }else{
+      logsCache.forEach(l=>{ if(l.time<cutoff && l.photo){ l.photo=""; removed++; } }); localSaveAll(); renderAll();
+    }
+    alert("已清理 "+removed+" 筆照片，空間已釋放。");
+    refreshStorage();
+  }catch(e){ alert("清理失敗："+e.message); }
 }
 
 /* ---------- 工具 ---------- */
