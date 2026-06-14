@@ -87,15 +87,18 @@
   .stall:active,.fx:active{transform:scale(.96)}
   .stall.done,.fx.done{background:linear-gradient(135deg,var(--done),var(--done2));color:#fff;box-shadow:0 0 0 3px rgba(34,197,94,.25)}
   .c-done{background:linear-gradient(135deg,#22c55e,#16a34a)!important;color:#fff!important;box-shadow:0 0 0 3px rgba(34,197,94,.25)}
-  .c-2{background:#fde047!important;color:#3b2f0b!important}      /* 2天未洗 淡黃 */
-  .c-3{background:#ea580c!important;color:#fff!important}          /* 3天未洗 深橘 */
-  .c-4{background:#3f2a1d!important;color:#f5e9e0!important}       /* 4天未洗 咖啡黑 */
-  .c-5{background:#dc2626!important;color:#fff!important}          /* 4天以上 紅 */
+  .c-due{background:#38bdf8!important;color:#06283d!important}     /* 到期 今日待清 淡藍 */
+  .c-2{background:#fde047!important;color:#3b2f0b!important}       /* 逾期1天 淡黃 */
+  .c-3{background:#ea580c!important;color:#fff!important}          /* 逾期2天 深橘 */
+  .c-4{background:#3f2a1d!important;color:#f5e9e0!important}       /* 逾期3天 咖啡黑 */
+  .c-5{background:#dc2626!important;color:#fff!important}          /* 逾期4天以上 紅 優先 */
   .priority{animation:pulse 1.3s infinite}
   @keyframes pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
   .pri{position:absolute;bottom:1px;left:50%;transform:translateX(-50%);background:#fff;color:#dc2626;font-weight:800;font-size:1.9cqw;line-height:1;padding:1px 3px;border-radius:4px;white-space:nowrap;display:none}
   .stall.priority .pri,.fx.priority .pri{display:block}
   .st.r{background:#7f1d1d;color:#fecaca}
+  .st.neu{background:#334155;color:#cbd5e1}
+  .st.due{background:#075985;color:#bae6fd}
   .stall.has-photo::after,.fx.has-photo::after{content:"📷";position:absolute;top:3px;right:4px;font-size:2.4cqw}
   .stall .tick,.fx .tick{position:absolute;top:2px;left:5px;font-size:2.6cqw;display:none}
   .stall.c-done .tick,.fx.c-done .tick{display:block}
@@ -103,7 +106,7 @@
   .legend{display:flex;gap:16px;flex-wrap:wrap;margin:12px 4px 0;font-size:12.5px;color:var(--muted)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
   .dot{width:13px;height:13px;border-radius:4px;display:inline-block}
-  .dot.g{background:#64748b}.dot.d{background:var(--done)}
+  .dot.g{background:#64748b}.dot.d{background:var(--done)}.dot.due{background:#38bdf8}.dot.o{background:#ea580c}.dot.r{background:#dc2626}
 
   .overlay{position:fixed;inset:0;background:rgba(2,6,23,.7);z-index:40;display:flex;align-items:flex-end;justify-content:center}
   .sheet{
@@ -222,8 +225,11 @@
     <p class="hint">完成清潔後，直接點選對應區域並可上傳照片。完成的區域會變成<strong style="color:var(--done)">綠色</strong>。</p>
     <div class="plan-shell"><div class="plan" id="plan"></div></div>
     <div class="legend">
-      <span><i class="dot g"></i>尚未清潔</span>
-      <span><i class="dot d"></i>已清潔</span>
+      <span><i class="dot d"></i>今日已清</span>
+      <span><i class="dot g"></i>週期內</span>
+      <span><i class="dot due"></i>今日待清</span>
+      <span><i class="dot o"></i>逾期</span>
+      <span><i class="dot r"></i>優先處理</span>
       <span>📷 已附照片</span>
     </div>
   </div>
@@ -238,8 +244,8 @@
 
     <div id="bossStatus">
       <div class="cards">
-        <div class="stat ok"><div class="n" id="cDone">0</div><div class="l">今日已清潔</div></div>
-        <div class="stat no"><div class="n" id="cLeft">0</div><div class="l">尚未清潔</div></div>
+        <div class="stat ok"><div class="n" id="cDone">0</div><div class="l">今日完成項數</div></div>
+        <div class="stat no"><div class="n" id="cLeft">0</div><div class="l">逾期待清（超過週期）</div></div>
       </div>
       <p class="hint" style="margin-top:14px">👆 點任一區域可「確認已檢查完成」，系統會重設日期、顏色歸零。</p>
       <div class="section-title">🚿 淋浴間</div>
@@ -247,7 +253,6 @@
       <div class="section-title">🧹 其他區域</div>
       <div id="fixList"></div>
       <div style="display:flex;gap:10px;margin:16px 4px 30px">
-        <button class="btn warn sm" onclick="resetToday()">重設今日狀態</button>
         <button class="btn ghost sm" onclick="exportCSV()">匯出紀錄CSV</button>
       </div>
     </div>
@@ -299,22 +304,22 @@ const SHOWER_TIPS = ["四面隔板、水溝蓋刷洗", "垃圾及頭髮清除", 
    ============================================================ */
 const ITEMS = [
   // 淋浴間 上排
-  {id:"14",type:"shower",label:"淋浴間 14",short:"14",x:37.0,y:5,w:7.5,h:21},
-  {id:"13",type:"shower",label:"淋浴間 13",short:"13",x:45.2,y:5,w:7.5,h:21},
-  {id:"12",type:"shower",label:"淋浴間 12",short:"12",x:53.4,y:5,w:7.5,h:21},
-  {id:"11",type:"shower",label:"淋浴間 11",short:"11",x:61.6,y:5,w:7.5,h:21},
-  {id:"10",type:"shower",label:"淋浴間 10",short:"10",x:69.8,y:5,w:7.5,h:21},
+  {id:"14",type:"shower",label:"淋浴間 14",short:"14",x:36.5,y:5,w:8,h:22},
+  {id:"13",type:"shower",label:"淋浴間 13",short:"13",x:45.0,y:5,w:8,h:22},
+  {id:"12",type:"shower",label:"淋浴間 12",short:"12",x:53.5,y:5,w:8,h:22},
+  {id:"11",type:"shower",label:"淋浴間 11",short:"11",x:62.0,y:5,w:8,h:22},
+  {id:"10",type:"shower",label:"淋浴間 10",short:"10",x:70.5,y:5,w:8,h:22},
   // 右排
   {id:"9", type:"shower",label:"淋浴間 9", short:"9", x:86.0,y:40,w:11,h:9.5},
   {id:"8", type:"shower",label:"淋浴間 8", short:"8", x:86.0,y:50.5,w:11,h:9.5},
   {id:"7", type:"shower",label:"淋浴間 7", short:"7", x:86.0,y:61,w:11,h:9.5},
-  {id:"6", type:"shower",label:"淋浴間 6", short:"6", x:86.0,y:71.5,w:11,h:16},
+  {id:"6", type:"shower",label:"淋浴間 6", short:"6", x:86.0,y:72.5,w:11,h:22},
   // 下排（整排往左移，5 不再蓋到 6）
-  {id:"1", type:"shower",label:"淋浴間 1", short:"1", x:34,y:72.5,w:8,h:22},
-  {id:"2", type:"shower",label:"淋浴間 2", short:"2", x:43,y:72.5,w:8,h:22},
-  {id:"3", type:"shower",label:"淋浴間 3", short:"3", x:52,y:72.5,w:8,h:22},
-  {id:"4", type:"shower",label:"淋浴間 4", short:"4", x:61,y:72.5,w:8,h:22},
-  {id:"5", type:"shower",label:"淋浴間 5", short:"5", x:70,y:67,w:9,h:27.5},
+  {id:"1", type:"shower",label:"淋浴間 1", short:"1", x:36.5,y:72.5,w:8,h:22},
+  {id:"2", type:"shower",label:"淋浴間 2", short:"2", x:45.0,y:72.5,w:8,h:22},
+  {id:"3", type:"shower",label:"淋浴間 3", short:"3", x:53.5,y:72.5,w:8,h:22},
+  {id:"4", type:"shower",label:"淋浴間 4", short:"4", x:62.0,y:72.5,w:8,h:22},
+  {id:"5", type:"shower",label:"淋浴間 5", short:"5", x:70.5,y:72.5,w:8,h:22},
   // 其他設施
   {id:"WC1",type:"fix",label:"馬桶 1",short:"馬桶",x:3,y:13,w:14,h:7,  tip:"沖洗並更換衛生紙及垃圾袋"},
   {id:"WC2",type:"fix",label:"馬桶 2",short:"馬桶",x:3,y:21.5,w:14,h:7,tip:"沖洗並更換衛生紙及垃圾袋"},
@@ -325,8 +330,8 @@ const ITEMS = [
   {id:"VB", type:"fix",label:"B梳妝台",short:"梳妝台B",x:86,y:5,w:11,h:24,v:true,tip:"桌面頭髮清除、電風扇灰塵清潔"},
   {id:"SINK",type:"fix",label:"洗手台",short:"洗手台",x:16,y:80,w:15,h:14,tip:"檯面與鏡面清潔、保持乾燥"},
   // 小垃圾桶（可點選清潔）
-  {id:"SG1",type:"fix",label:"小垃圾桶 1",short:"小垃圾",x:87.5,y:29.5,w:9,h:9,round:true,tip:"垃圾袋更換"},
-  {id:"SG2",type:"fix",label:"小垃圾桶 2",short:"小垃圾",x:79,y:73,w:7,h:8,round:true,tip:"垃圾袋更換"},
+  {id:"SG1",type:"fix",label:"小垃圾桶 1",short:"小垃圾",x:88,y:30.5,w:7,h:8,round:true,tip:"垃圾袋更換"},
+  {id:"SG2",type:"fix",label:"小垃圾桶 2",short:"小垃圾",x:79,y:79,w:7,h:8,round:true,tip:"垃圾袋更換"},
 ];
 function getItem(id){ return ITEMS.find(i=>i.id===id); }
 function tipsOf(it){ return it.type==="shower" ? SHOWER_TIPS : [it.tip]; }
@@ -353,14 +358,21 @@ function fmtTime(ts){ const d=new Date(ts);
 function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
 function doneToday(rec){ return rec && rec.status==="done" && isToday(rec.at); }
 function daysSince(ts){ if(!ts) return Infinity; const a=new Date(ts); a.setHours(0,0,0,0); const n=new Date(); n.setHours(0,0,0,0); return Math.round((n-a)/86400000); }
-function ageOf(st){
+// 各區清潔週期（天）：淋浴間 3 天；梳妝台 2 天；馬桶/垃圾桶/洗手台 每天
+function targetOf(it){ if(!it) return 1; if(it.type==="shower") return 3; if(it.id==="VA"||it.id==="VB") return 2; return 1; }
+// 顏色依「是否超過該區清潔週期」決定，週期內不報警
+function ageOf(st, target){
+  const T=target||1;
   const dd=(st&&st.at)?daysSince(st.at):Infinity;
-  if(dd===0) return {dd,colorClass:"c-done",label:"已清",priority:false};
-  if(dd===Infinity||dd===1) return {dd,colorClass:"",label:"未清",priority:false};
-  if(dd===2) return {dd,colorClass:"c-2",label:"2天",priority:false};
-  if(dd===3) return {dd,colorClass:"c-3",label:"3天",priority:false};
-  if(dd===4) return {dd,colorClass:"c-4",label:"4天",priority:false};
-  return {dd,colorClass:"c-5",label:"優先",priority:true};
+  if(dd===0) return {dd,colorClass:"c-done",label:"今日已清",tag:"✓",priority:false,warn:false};
+  if(dd===Infinity) return {dd,colorClass:"",label:"尚未清潔",tag:"未清",priority:false,warn:false};
+  const over=dd-T;
+  if(over<0) return {dd,colorClass:"",label:"週期內（"+dd+"天）",tag:dd+"天",priority:false,warn:false};
+  if(over===0) return {dd,colorClass:"c-due",label:"今日待清",tag:"待清",priority:false,warn:false};
+  if(over===1) return {dd,colorClass:"c-2",label:"逾期1天",tag:"逾1",priority:false,warn:true};
+  if(over===2) return {dd,colorClass:"c-3",label:"逾期2天",tag:"逾2",priority:false,warn:true};
+  if(over===3) return {dd,colorClass:"c-4",label:"逾期3天",tag:"逾3",priority:false,warn:true};
+  return {dd,colorClass:"c-5",label:"優先處理",tag:"優先",priority:true,warn:true};
 }
 
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
@@ -507,8 +519,8 @@ function buildPlan(){
 function renderPlan(){
   ITEMS.forEach(it=>{
     const b=document.getElementById("cell-"+it.id); if(!b) return;
-    const st=itemState[it.id]; const a=ageOf(st);
-    b.classList.remove("c-done","c-2","c-3","c-4","c-5","priority","has-photo");
+    const st=itemState[it.id]; const a=ageOf(st, targetOf(it));
+    b.classList.remove("c-done","c-due","c-2","c-3","c-4","c-5","priority","has-photo");
     if(a.colorClass) b.classList.add(a.colorClass);
     if(a.priority) b.classList.add("priority");
     if(st&&st.photo&&isToday(st.at)) b.classList.add("has-photo");
@@ -529,11 +541,11 @@ function openDo(kind,id){
   }else{
     const it=getItem(id); title=it.label;
     tipsHtml='<div class="tips"><b>清潔提示</b><ul>'+tipsOf(it).map(t=>'<li>'+t+'</li>').join('')+'</ul></div>';
-    const st=itemState[id]; const a=ageOf(st);
+    const st=itemState[id]; const a=ageOf(st, targetOf(it));
     if(a.dd===0) info='本日已由 <b>'+(st.by||'—')+'</b> 於 '+fmtTime(st.at)+' 清潔';
-    else if(a.dd===Infinity) info='尚未有清潔紀錄';
-    else info='已 '+a.dd+' 天未清潔'+(st&&st.at?'（上次 '+fmtTime(st.at)+'）':'');
-    if(a.priority) info='<span style="color:#fca5a5;font-weight:800">⚠️ 已超過4天未清潔，請優先處理！</span><br>'+info;
+    else if(a.dd===Infinity) info='尚未有清潔紀錄（目標：每 '+targetOf(it)+' 天清一次）';
+    else info=a.label+'　上次：'+fmtTime(st.at)+'（目標每 '+targetOf(it)+' 天）';
+    if(a.priority) info='<span style="color:#fca5a5;font-weight:800">⚠️ 已超過清潔週期，請優先處理！</span><br>'+info;
   }
   const existPhoto=(kind==="item" && itemState[id] && itemState[id].photo)?itemState[id].photo:"";
   const pboxHtml=existPhoto?('目前照片<br><img src="'+existPhoto+'">'):'📷 清潔後照片(選填)<br><span style="font-size:12px">拍照或選擇相片</span>';
@@ -625,26 +637,26 @@ function bossTab(t){
 }
 function renderBoss(){
   // 計數
-  let done=0; ITEMS.forEach(it=>{ if(ageOf(itemState[it.id]).dd===0) done++; });
+  let done=0,overdue=0; ITEMS.forEach(it=>{ const a=ageOf(itemState[it.id],targetOf(it)); if(a.dd===0) done++; else if(a.warn) overdue++; });
   document.getElementById("cDone").textContent=done;
-  document.getElementById("cLeft").textContent=ITEMS.length-done;
+  document.getElementById("cLeft").textContent=overdue;
   // 淋浴間
   const grid=document.getElementById("grid14"); grid.innerHTML="";
   ITEMS.filter(i=>i.type==="shower").slice().sort((a,b)=>Number(a.id)-Number(b.id)).forEach(it=>{
-    const st=itemState[it.id]; const a=ageOf(st);
+    const st=itemState[it.id]; const a=ageOf(st, targetOf(it));
     const d=document.createElement("div"); d.className="mini"+(a.colorClass?(" "+a.colorClass):"")+(a.priority?" priority":"");
-    d.innerHTML=it.short+'<small>'+(a.dd===0?(st&&st.by?st.by:'已清'):a.label)+'</small>';
-    d.title=a.dd===0?((st.by||'')+" "+fmtTime(st.at)):(a.dd===Infinity?"尚未清潔":a.dd+"天未清潔");
+    d.innerHTML=it.short+'<small>'+(a.dd===0?(st&&st.by?st.by:'✓'):a.tag)+'</small>';
+    d.title=a.dd===0?((st.by||'')+" "+fmtTime(st.at)):(a.dd===Infinity?"尚未清潔":a.label+"（"+a.dd+"天）");
     d.onclick=()=>openDo("item",it.id);
     grid.appendChild(d);
   });
   // 其他區域
   const fl=document.getElementById("fixList"); fl.innerHTML="";
   ITEMS.filter(i=>i.type==="fix").forEach(it=>{
-    const st=itemState[it.id]; const a=ageOf(st); const ok=a.dd===0;
+    const st=itemState[it.id]; const a=ageOf(st, targetOf(it)); const ok=a.dd===0;
     const row=document.createElement("div"); row.className="arow"+(ok?" done":"");
-    const pillCls=ok?'ok':(a.priority?'r':'no');
-    const pillTxt=ok?'已清潔':(a.priority?'優先處理':((a.dd>=2&&a.dd!==Infinity)?a.dd+'天未洗':'未清潔'));
+    const pillCls=ok?'ok':(a.priority?'r':(a.warn?'no':(a.colorClass==='c-due'?'due':'neu')));
+    const pillTxt=a.label;
     row.innerHTML=`<div class="ic ${a.colorClass}">${it.short}</div>
       <div class="tx"><b>${it.label}</b><div>${ok?('✓ '+(st.by||'')+' · '+fmtTime(st.at)):it.tip}</div></div>
       ${ok&&st.photo?`<img src="${st.photo}" onclick="event.stopPropagation();showLightbox('${cssUrl(st.photo)}')">`:''}
