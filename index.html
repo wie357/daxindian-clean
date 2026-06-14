@@ -290,9 +290,12 @@ const FIREBASE_CONFIG = {
   measurementId: "G-GV5LHCFPRE"
 };
 
-/* ---- 帳號 ---- */
-const STAFF = { user:"ya123", pass:"1234" };
-const BOSS_PASS = "12345";
+/* ---- 帳號（密碼存在 Firebase Authentication，不在原始碼裡）---- */
+const STAFF_EMAIL = "staff@daxindian.app";     // 清潔部 登入帳號
+const MANAGER_EMAIL = "manager@daxindian.app"; // 主管 登入帳號
+// 離線（完全無網路）時的本機備用密碼，僅供緊急測試
+const STAFF_FALLBACK = "1234";
+const BOSS_FALLBACK = "12345";
 
 /* ============================================================
    清潔提示
@@ -343,7 +346,7 @@ let SAVED_CFG=null;
 try{ SAVED_CFG=JSON.parse(localStorage.getItem("dx_fbcfg")||"null"); }catch(e){}
 const ACTIVE_CONFIG=(SAVED_CFG&&SAVED_CFG.projectId)?SAVED_CFG:FIREBASE_CONFIG;
 let useCloud=!!ACTIVE_CONFIG.projectId;
-let db=null;
+let db=null, listenersStarted=false;
 let itemState={};   // {id:{status,by,at,photo}}
 let tasksCache=[];  // [{id,text,order,status,by,at,photo}]
 let logsCache=[];
@@ -380,8 +383,14 @@ function loadScript(src){return new Promise((res,rej)=>{const s=document.createE
 async function initCloud(){
   await loadScript("https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js");
   await loadScript("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js");
+  await loadScript("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js");
   firebase.initializeApp(ACTIVE_CONFIG);
   db = firebase.firestore();
+  try{ await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION); }catch(e){}
+  // 只有通過驗證登入後才讀取資料（資料庫規則要求 request.auth != null）
+  firebase.auth().onAuthStateChanged(function(u){ if(u && !listenersStarted){ listenersStarted=true; startCloudListeners(); } });
+}
+function startCloudListeners(){
   db.collection("items").onSnapshot(s=>{ itemState={}; s.forEach(d=>itemState[d.id]=d.data()); renderAll(); });
   db.collection("tasks").orderBy("order").onSnapshot(s=>{ tasksCache=[]; s.forEach(d=>tasksCache.push(Object.assign({id:d.id},d.data()))); renderAll(); });
   db.collection("logs").orderBy("time","desc").limit(300).onSnapshot(s=>{ logsCache=[]; s.forEach(d=>logsCache.push(d.data())); renderAll(); });
@@ -457,16 +466,27 @@ async function deleteTask(id){
 /* ============================================================
    登入 / 角色
    ============================================================ */
-function staffLogin(){
+async function staffLogin(){
   const dept=document.getElementById("dept").value;
   const p=document.getElementById("p").value;
-  if(p===STAFF.pass){ enter("staff",dept); }
-  else{ document.getElementById("loginErr").textContent="密碼錯誤"; }
+  const err=document.getElementById("loginErr");
+  if(useCloud){
+    err.textContent="登入中…";
+    try{ await firebase.auth().signInWithEmailAndPassword(STAFF_EMAIL,p); err.textContent=""; enter("staff",dept); }
+    catch(e){ err.textContent="密碼錯誤"; }
+  }else{
+    if(p===STAFF_FALLBACK){ enter("staff",dept); } else { err.textContent="密碼錯誤"; }
+  }
 }
-document.getElementById("secret").addEventListener("click",()=>{
+document.getElementById("secret").addEventListener("click",async ()=>{
   const pw=prompt("主管密碼"); if(pw===null) return;
-  if(pw===BOSS_PASS){ enter("boss","主管"); }
-  else{ document.getElementById("loginErr").textContent="主管密碼錯誤"; }
+  const err=document.getElementById("loginErr");
+  if(useCloud){
+    try{ await firebase.auth().signInWithEmailAndPassword(MANAGER_EMAIL,pw); err.textContent=""; enter("boss","主管"); }
+    catch(e){ err.textContent="主管密碼錯誤"; }
+  }else{
+    if(pw===BOSS_FALLBACK){ enter("boss","主管"); } else { err.textContent="主管密碼錯誤"; }
+  }
 });
 function enter(role,user){
   session={role,user}; noticeShown=false;
@@ -485,7 +505,8 @@ function enter(role,user){
   renderAll();
 }
 function logout(){
-  session=null;
+  try{ if(useCloud && firebase.auth().currentUser) firebase.auth().signOut(); }catch(e){}
+  session=null; listenersStarted=false;
   document.getElementById("appView").classList.add("hidden");
   document.getElementById("loginView").classList.remove("hidden");
   document.getElementById("p").value=""; document.getElementById("loginErr").textContent="";
