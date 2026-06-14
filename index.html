@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>大新店清潔紀錄系統</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#1e293b; --panel2:#334155;
+    --line:#475569; --muted:#94a3b8; --text:#e2e8f0;
+    --accent:#0ea5e9; --accent2:#0284c7;
+    --done:#22c55e; --done2:#16a34a; --pending:#94a3b8;
+    --warn:#f59e0b; --danger:#ef4444;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;
+    background:linear-gradient(160deg,#0b1220,#0f172a 40%,#111c33);
+    color:var(--text); min-height:100vh;
+  }
+  .hidden{display:none !important}
+  .wrap{max-width:760px;margin:0 auto;padding:16px}
+
+  /* ===== Top bar ===== */
+  header{
+    position:sticky;top:0;z-index:20;
+    background:rgba(15,23,42,.92);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .bar{max-width:760px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:10px}
+  .bar h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.5px;flex:1}
+  .badge{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--panel2);color:var(--muted)}
+  .badge.staff{background:#0c4a6e;color:#bae6fd}
+  .badge.boss{background:#7c2d12;color:#fed7aa}
+  .btn{
+    border:none;border-radius:10px;padding:10px 14px;font-size:14px;font-weight:600;
+    cursor:pointer;background:var(--accent);color:#fff;transition:.15s;
+  }
+  .btn:hover{background:var(--accent2)}
+  .btn.ghost{background:var(--panel2);color:var(--text)}
+  .btn.ghost:hover{background:var(--line)}
+  .btn.sm{padding:7px 11px;font-size:13px}
+  .btn.warn{background:var(--warn)}
+  .btn.danger{background:var(--danger)}
+
+  /* ===== Login ===== */
+  .login-card{
+    max-width:380px;margin:8vh auto 0;background:var(--panel);
+    border:1px solid var(--line);border-radius:18px;padding:28px 24px;
+    box-shadow:0 20px 60px rgba(0,0,0,.4);
+  }
+  .login-card .logo{
+    width:62px;height:62px;border-radius:16px;margin:0 auto 14px;
+    background:linear-gradient(135deg,var(--accent),#22d3ee);
+    display:flex;align-items:center;justify-content:center;font-size:30px;
+  }
+  .login-card h2{text-align:center;margin:0 0 4px;font-size:21px}
+  .login-card p.sub{text-align:center;color:var(--muted);font-size:13px;margin:0 0 22px}
+  label.fl{display:block;font-size:13px;color:var(--muted);margin:14px 2px 6px}
+  input.fld{
+    width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);
+    background:#0b1324;color:var(--text);font-size:15px;
+  }
+  input.fld:focus{outline:none;border-color:var(--accent)}
+  .login-card .btn{width:100%;margin-top:20px;padding:13px}
+  .err{color:#fca5a5;font-size:13px;text-align:center;margin-top:12px;min-height:18px}
+  /* hidden manager trigger */
+  .secret{
+    position:fixed;bottom:0;right:0;width:64px;height:64px;cursor:default;
+    z-index:5;
+  }
+
+  /* ===== Floor plan ===== */
+  .section-title{font-size:15px;font-weight:700;margin:18px 4px 12px;color:#cbd5e1;display:flex;align-items:center;gap:8px}
+  .hint{font-size:13px;color:var(--muted);margin:0 4px 14px;line-height:1.6}
+  .plan-shell{
+    background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:14px;overflow:hidden;
+  }
+  .plan{
+    position:relative;width:100%;aspect-ratio:1040/595;
+    container-type:inline-size;
+  }
+  .room-label{
+    position:absolute;display:flex;align-items:center;justify-content:center;
+    font-size:7cqw;font-weight:800;color:rgba(148,163,184,.35);
+    letter-spacing:.4em;pointer-events:none;
+  }
+  .fx{
+    position:absolute;background:#64748b;border-radius:5px;
+    display:flex;align-items:center;justify-content:center;
+    color:#0b1220;font-weight:700;font-size:2.6cqw;text-align:center;line-height:1.15;
+  }
+  .fx.round{border-radius:50%}
+  .stall{
+    position:absolute;border:none;border-radius:6px;cursor:pointer;
+    background:#64748b;color:#0b1220;font-weight:900;font-size:4.6cqw;
+    display:flex;align-items:center;justify-content:center;
+    transition:.18s;box-shadow:inset 0 0 0 0 rgba(0,0,0,0);
+    padding:0;
+  }
+  .stall small{display:block;font-size:1.7cqw;font-weight:700;margin-top:2px;opacity:.85}
+  .stall:hover{filter:brightness(1.08)}
+  .stall:active{transform:scale(.96)}
+  .stall.done{
+    background:linear-gradient(135deg,var(--done),var(--done2));color:#fff;
+    box-shadow:0 0 0 3px rgba(34,197,94,.25);
+  }
+  .stall.has-photo::after{
+    content:"📷";position:absolute;top:3px;right:4px;font-size:2.4cqw;
+  }
+  .stall .tick{position:absolute;top:2px;left:5px;font-size:2.6cqw;display:none}
+  .stall.done .tick{display:block}
+
+  /* legend */
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin:12px 4px 0;font-size:12.5px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:13px;height:13px;border-radius:4px;display:inline-block}
+  .dot.g{background:#64748b}.dot.d{background:var(--done)}
+
+  /* ===== Modal ===== */
+  .overlay{
+    position:fixed;inset:0;background:rgba(2,6,23,.7);z-index:40;
+    display:flex;align-items:flex-end;justify-content:center;padding:0;
+  }
+  .sheet{
+    background:var(--panel);width:100%;max-width:760px;
+    border-radius:20px 20px 0 0;border:1px solid var(--line);border-bottom:none;
+    padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+    animation:up .22s ease;
+  }
+  @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+  .sheet h3{margin:0 0 4px;font-size:19px}
+  .sheet .meta{color:var(--muted);font-size:13px;margin:0 0 16px}
+  .photo-box{
+    border:2px dashed var(--line);border-radius:14px;padding:18px;text-align:center;
+    color:var(--muted);font-size:14px;margin-bottom:14px;
+  }
+  .photo-box img{max-width:100%;border-radius:10px;margin-top:10px;max-height:240px}
+  .row{display:flex;gap:10px}
+  .row .btn{flex:1}
+  .file-btn{
+    display:block;width:100%;padding:12px;border-radius:10px;text-align:center;
+    background:var(--panel2);color:var(--text);font-weight:600;cursor:pointer;font-size:14px;
+  }
+  .upbar{height:6px;background:#0b1324;border-radius:4px;overflow:hidden;margin-top:10px;display:none}
+  .upbar i{display:block;height:100%;width:0;background:var(--accent);transition:.2s}
+
+  /* ===== Manager ===== */
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 4px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .stat .n{font-size:26px;font-weight:800}
+  .stat .l{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .stat.ok .n{color:var(--done)}
+  .stat.no .n{color:var(--warn)}
+  .grid14{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin:14px 4px 0}
+  .mini{
+    aspect-ratio:1;border-radius:8px;background:#64748b;color:#0b1220;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-weight:800;font-size:15px;cursor:pointer;
+  }
+  .mini.done{background:linear-gradient(135deg,var(--done),var(--done2));color:#fff}
+  .mini small{font-size:8px;font-weight:600}
+  .log{margin:6px 4px 40px}
+  .log-item{
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;margin-bottom:9px;display:flex;gap:12px;align-items:center;
+  }
+  .log-item .ic{
+    width:40px;height:40px;border-radius:10px;background:var(--done);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;font-size:15px;
+  }
+  .log-item .tx{flex:1;min-width:0}
+  .log-item .tx b{font-size:14.5px}
+  .log-item .tx div{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .log-item img{width:46px;height:46px;border-radius:8px;object-fit:cover;cursor:pointer}
+  .empty{color:var(--muted);text-align:center;padding:30px;font-size:14px}
+  .tabbar{display:flex;gap:8px;margin:16px 4px 4px}
+  .tabbar .btn{flex:1}
+  .tabbar .btn.ghost.active{background:var(--accent);color:#fff}
+
+  .cloud-tag{font-size:11.5px;padding:4px 9px;border-radius:999px;background:#064e3b;color:#6ee7b7}
+  .cloud-tag.local{background:#3f2d12;color:#fcd34d}
+
+  .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+  .lightbox img{max-width:100%;max-height:100%;border-radius:10px}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="loginView">
+  <div class="login-card">
+    <div class="logo">🚿</div>
+    <h2>大新店清潔紀錄系統</h2>
+    <p class="sub">女浴室 · 淋浴間清潔登記</p>
+    <label class="fl" for="u">帳號</label>
+    <input class="fld" id="u" autocomplete="username" placeholder="請輸入帳號">
+    <label class="fl" for="p">密碼</label>
+    <input class="fld" id="p" type="password" autocomplete="current-password" placeholder="請輸入密碼">
+    <button class="btn" onclick="staffLogin()">登入</button>
+    <div class="err" id="loginErr"></div>
+    <div style="text-align:center;margin-top:16px">
+      <a href="#" onclick="openSetup();return false;" style="color:var(--muted);font-size:12.5px;text-decoration:none">⚙️ 雲端同步設定</a>
+    </div>
+  </div>
+  <!-- hidden manager trigger (bottom-right corner) -->
+  <div class="secret" id="secret" title=""></div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="appView" class="hidden">
+  <header>
+    <div class="bar">
+      <h1>大新店清潔紀錄</h1>
+      <span class="cloud-tag" id="cloudTag">雲端</span>
+      <span class="badge" id="roleBadge">—</span>
+      <button class="btn ghost sm" onclick="openSetup()" title="雲端設定">⚙️</button>
+      <button class="btn ghost sm" onclick="logout()">登出</button>
+    </div>
+  </header>
+
+  <!-- ---- STAFF ---- -->
+  <div class="wrap" id="staffPanel">
+    <div class="section-title">🧽 點選你已刷洗完成的淋浴間</div>
+    <p class="hint">完成刷洗後，直接點選對應編號的淋浴間。完成後該間會變成<strong style="color:var(--done)">綠色</strong>，並可上傳清潔後照片。</p>
+    <div class="plan-shell">
+      <div class="plan" id="plan"></div>
+    </div>
+    <div class="legend">
+      <span><i class="dot g"></i>尚未清潔</span>
+      <span><i class="dot d"></i>已清潔</span>
+      <span>📷 已附照片</span>
+    </div>
+  </div>
+
+  <!-- ---- MANAGER ---- -->
+  <div class="wrap hidden" id="bossPanel">
+    <div class="tabbar">
+      <button class="btn ghost active" id="tabStatus" onclick="bossTab('status')">清潔狀況</button>
+      <button class="btn ghost" id="tabLog" onclick="bossTab('log')">訊息紀錄</button>
+    </div>
+
+    <div id="bossStatus">
+      <div class="cards">
+        <div class="stat ok"><div class="n" id="cDone">0</div><div class="l">今日已清潔</div></div>
+        <div class="stat no"><div class="n" id="cLeft">14</div><div class="l">尚未清潔</div></div>
+      </div>
+      <div class="grid14" id="grid14"></div>
+      <div style="display:flex;gap:10px;margin:16px 4px 30px">
+        <button class="btn warn sm" onclick="resetToday()">重設今日狀態</button>
+        <button class="btn ghost sm" onclick="exportCSV()">匯出紀錄CSV</button>
+      </div>
+    </div>
+
+    <div id="bossLog" class="hidden">
+      <div class="section-title" style="margin-top:6px">📋 清潔訊息紀錄</div>
+      <div class="log" id="logList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- clean modal -->
+<div id="modal"></div>
+<!-- lightbox -->
+<div id="lb"></div>
+
+<script>
+/* ============================================================
+   設定區 — 若要跨裝置雲端同步，請填入您的 Firebase 設定
+   未填寫時，系統自動以「本機儲存」模式運作(僅同一瀏覽器)
+   ============================================================ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAy-KORG_j5rCC_gAaraH9CnS9ANoO48Qs",
+  authDomain: "daxindian-clean.firebaseapp.com",
+  projectId: "daxindian-clean",
+  storageBucket: "daxindian-clean.firebasestorage.app",
+  messagingSenderId: "114559842233",
+  appId: "1:114559842233:web:71c44626f89c537249a868",
+  measurementId: "G-GV5LHCFPRE"
+};
+
+/* ---- 帳號設定 ---- */
+const STAFF = { user:"yaf123", pass:"12345" };
+const BOSS_PASS = "12345";
+const TOTAL = 14;
+
+/* ============================================================
+   平面圖配置 (百分比座標, 對應上傳的女浴室平面圖)
+   ============================================================ */
+const STALLS = [
+  {id:14,x:37.0,y:5,w:7.5,h:21},
+  {id:13,x:45.2,y:5,w:7.5,h:21},
+  {id:12,x:53.4,y:5,w:7.5,h:21},
+  {id:11,x:61.6,y:5,w:7.5,h:21},
+  {id:10,x:69.8,y:5,w:7.5,h:21},
+  {id:9, x:86.0,y:38,w:11,h:9.5},
+  {id:8, x:86.0,y:48.5,w:11,h:9.5},
+  {id:7, x:86.0,y:59,w:11,h:9.5},
+  {id:6, x:86.0,y:69.5,w:11,h:9.5},
+  {id:1, x:46.5,y:72.5,w:8,h:22},
+  {id:2, x:55.2,y:72.5,w:8,h:22},
+  {id:3, x:63.9,y:72.5,w:8,h:22},
+  {id:4, x:72.6,y:72.5,w:8,h:22},
+  {id:5, x:81.3,y:67,w:11,h:27.5},
+];
+const FIXTURES = [
+  {t:"馬桶",x:3,y:13,w:14,h:7},
+  {t:"馬桶",x:3,y:21.5,w:14,h:7},
+  {t:"馬桶",x:3,y:30,w:14,h:7},
+  {t:"梳妝台",x:3,y:55,w:14,h:8},
+  {t:"垃圾桶",x:3.5,y:70,w:8,h:8,round:true},
+  {t:"垃圾桶",x:12,y:70,w:8,h:8,round:true},
+  {t:"梳妝台",x:86,y:5,w:11,h:28,v:true},
+  {t:"洗手台",x:28,y:80,w:16,h:14},
+];
+
+/* ============================================================
+   資料層: Firebase 或 本機 (自動偵測)
+   ============================================================ */
+// 優先使用「設定精靈」儲存的設定，其次才用上方常數
+let SAVED_CFG=null;
+try{ SAVED_CFG=JSON.parse(localStorage.getItem("dx_fbcfg")||"null"); }catch(e){ SAVED_CFG=null; }
+const ACTIVE_CONFIG = (SAVED_CFG && SAVED_CFG.projectId) ? SAVED_CFG : FIREBASE_CONFIG;
+let useCloud = !!ACTIVE_CONFIG.projectId;
+let db=null, storage=null;
+let stateCache = {};   // {id: {status,by,at,photo}}
+let logsCache = [];    // [{stall,user,role,time,photo}]
+let session = null;    // {role:'staff'|'boss', user}
+
+function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+function isToday(ts){ if(!ts) return false; const d=new Date(ts); const n=new Date();
+  return d.getFullYear()==n.getFullYear()&&d.getMonth()==n.getMonth()&&d.getDate()==n.getDate(); }
+function fmtTime(ts){ const d=new Date(ts);
+  return d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getDate()).padStart(2,"0")
+    +" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+
+/* ---------- Cloud init ---------- */
+async function initCloud(){
+  await loadScript("https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js");
+  await loadScript("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js");
+  firebase.initializeApp(ACTIVE_CONFIG);
+  db = firebase.firestore();
+  // 照片以壓縮後的 base64 直接存入 Firestore，免費、不需 Storage
+  // realtime listeners
+  db.collection("showers").onSnapshot(s=>{
+    stateCache={}; s.forEach(d=>stateCache[d.id]=d.data()); renderAll();
+  });
+  db.collection("logs").orderBy("time","desc").limit(300).onSnapshot(s=>{
+    logsCache=[]; s.forEach(d=>logsCache.push(d.data())); renderAll();
+  });
+}
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+
+/* ---------- Local fallback ---------- */
+function localLoad(){
+  try{ stateCache=JSON.parse(localStorage.getItem("dx_state")||"{}"); }catch(e){stateCache={}}
+  try{ logsCache=JSON.parse(localStorage.getItem("dx_logs")||"[]"); }catch(e){logsCache=[]}
+}
+function localSave(){
+  try{
+    localStorage.setItem("dx_state",JSON.stringify(stateCache));
+    localStorage.setItem("dx_logs",JSON.stringify(logsCache));
+  }catch(e){ /* 儲存空間滿或無法寫入時仍維持畫面更新 */ }
+}
+
+/* ---------- Write: mark cleaned ---------- */
+async function markCleaned(id, photoDataUrl, onProgress){
+  const now = Date.now();
+  // 照片以壓縮後的 base64 直接存(雲端存進 Firestore, 本機存進瀏覽器), 不需付費 Storage
+  let photoUrl = photoDataUrl || "";
+  if(onProgress) onProgress(1);
+  const rec = { status:"done", by:session.user, at:now, photo:photoUrl };
+  const logEntry = { stall:id, user:session.user, role:"清潔人員", time:now, photo:photoUrl };
+  if(useCloud){
+    await db.collection("showers").doc(String(id)).set(rec,{merge:true});
+    await db.collection("logs").add(logEntry);
+  } else {
+    stateCache[id]=rec; logsCache.unshift(logEntry); renderAll(); localSave();
+  }
+}
+
+async function resetTodayData(){
+  if(useCloud){
+    const batch = db.batch();
+    for(let i=1;i<=TOTAL;i++){ batch.set(db.collection("showers").doc(String(i)),{status:"pending"},{merge:true}); }
+    await batch.commit();
+  } else {
+    for(let i=1;i<=TOTAL;i++){ if(stateCache[i]) stateCache[i].status="pending"; }
+    localSave(); renderAll();
+  }
+}
+
+/* ============================================================
+   登入 / 角色
+   ============================================================ */
+function staffLogin(){
+  const u=document.getElementById("u").value.trim();
+  const p=document.getElementById("p").value;
+  if(u===STAFF.user && p===STAFF.pass){ enter("staff",u); }
+  else{ document.getElementById("loginErr").textContent="帳號或密碼錯誤"; }
+}
+// hidden manager trigger
+document.getElementById("secret").addEventListener("click",()=>{
+  const pw = prompt("主管密碼");
+  if(pw===null) return;
+  if(pw===BOSS_PASS){ enter("boss","主管"); }
+  else { document.getElementById("loginErr").textContent="主管密碼錯誤"; }
+});
+
+function enter(role,user){
+  session={role,user};
+  document.getElementById("loginView").classList.add("hidden");
+  document.getElementById("appView").classList.remove("hidden");
+  const badge=document.getElementById("roleBadge");
+  if(role==="staff"){
+    badge.textContent="清潔人員 · "+user; badge.className="badge staff";
+    document.getElementById("staffPanel").classList.remove("hidden");
+    document.getElementById("bossPanel").classList.add("hidden");
+  } else {
+    badge.textContent="主管"; badge.className="badge boss";
+    document.getElementById("staffPanel").classList.add("hidden");
+    document.getElementById("bossPanel").classList.remove("hidden");
+  }
+  renderAll();
+}
+function logout(){
+  session=null;
+  document.getElementById("appView").classList.add("hidden");
+  document.getElementById("loginView").classList.remove("hidden");
+  document.getElementById("p").value="";
+  document.getElementById("loginErr").textContent="";
+}
+
+/* ============================================================
+   渲染: 平面圖
+   ============================================================ */
+function buildPlan(){
+  const plan=document.getElementById("plan");
+  plan.innerHTML="";
+  // center label
+  const lab=document.createElement("div");
+  lab.className="room-label"; lab.textContent="女浴室";
+  lab.style.left="22%"; lab.style.top="38%"; lab.style.width="56%"; lab.style.height="22%";
+  plan.appendChild(lab);
+  // fixtures
+  FIXTURES.forEach(f=>{
+    const d=document.createElement("div");
+    d.className="fx"+(f.round?" round":"");
+    d.style.left=f.x+"%"; d.style.top=f.y+"%"; d.style.width=f.w+"%"; d.style.height=f.h+"%";
+    d.textContent=f.t;
+    if(f.v){ d.style.writingMode="vertical-rl"; d.style.letterSpacing="2px"; }
+    plan.appendChild(d);
+  });
+  // stalls
+  STALLS.forEach(s=>{
+    const b=document.createElement("button");
+    b.className="stall"; b.id="stall-"+s.id;
+    b.style.left=s.x+"%"; b.style.top=s.y+"%"; b.style.width=s.w+"%"; b.style.height=s.h+"%";
+    b.innerHTML='<span class="tick">✓</span>'+s.id+'<small>淋浴間</small>';
+    b.onclick=()=>openClean(s.id);
+    plan.appendChild(b);
+  });
+}
+
+function renderPlan(){
+  STALLS.forEach(s=>{
+    const b=document.getElementById("stall-"+s.id); if(!b) return;
+    const st=stateCache[s.id];
+    const done = st && st.status==="done" && isToday(st.at);
+    b.classList.toggle("done",!!done);
+    b.classList.toggle("has-photo", !!(st&&st.photo&&isToday(st.at)));
+  });
+}
+
+/* ============================================================
+   清潔彈窗
+   ============================================================ */
+let pendingPhoto=null;
+function openClean(id){
+  pendingPhoto=null;
+  const st=stateCache[id];
+  const done = st && st.status==="done" && isToday(st.at);
+  const info = done ? `本日已由 <b>${st.by||"—"}</b> 於 ${fmtTime(st.at)} 清潔` : "尚未清潔";
+  document.getElementById("modal").innerHTML=`
+    <div class="overlay" onclick="if(event.target===this)closeModal()">
+      <div class="sheet">
+        <h3>淋浴間 ${id}</h3>
+        <p class="meta">${info}</p>
+        <div class="photo-box" id="pbox">
+          📷 清潔後照片(選填)<br><span style="font-size:12px">拍照或選擇相片上傳</span>
+        </div>
+        <label class="file-btn">
+          📸 拍照 / 選擇照片
+          <input type="file" accept="image/*" capture="environment" style="display:none" onchange="onPhoto(event)">
+        </label>
+        <div class="upbar" id="upbar"><i></i></div>
+        <div class="row" style="margin-top:16px">
+          <button class="btn ghost" onclick="closeModal()">取消</button>
+          <button class="btn" id="confirmBtn" onclick="confirmClean(${id})">✓ 完成清潔登記</button>
+        </div>
+      </div>
+    </div>`;
+}
+function closeModal(){ document.getElementById("modal").innerHTML=""; pendingPhoto=null; }
+
+function onPhoto(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    // 壓縮照片, 確保安全存進 Firestore (單筆文件上限 1MB)
+    const img=new Image();
+    img.onload=()=>{
+      const max=900; let{width:w,height:h}=img;
+      if(w>max||h>max){ const r=Math.min(max/w,max/h); w=w*r|0; h=h*r|0; }
+      const c=document.createElement("canvas"); c.width=w;c.height=h;
+      c.getContext("2d").drawImage(img,0,0,w,h);
+      // 逐步降低品質直到 < 700KB, 確保不超過 Firestore 文件大小限制
+      let q=0.7, data=c.toDataURL("image/jpeg",q);
+      while(data.length>700000 && q>0.3){ q-=0.1; data=c.toDataURL("image/jpeg",q); }
+      pendingPhoto=data;
+      document.getElementById("pbox").innerHTML='✓ 已選擇照片<br><img src="'+pendingPhoto+'">';
+    };
+    img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function confirmClean(id){
+  const btn=document.getElementById("confirmBtn");
+  btn.disabled=true; btn.textContent="處理中…";
+  const bar=document.getElementById("upbar"); const fill=bar.querySelector("i");
+  if(pendingPhoto && useCloud){ bar.style.display="block"; }
+  try{
+    await markCleaned(id, pendingPhoto, p=>{ fill.style.width=(p*100)+"%"; });
+    closeModal();
+    toast("淋浴間 "+id+" 已登記完成 ✓");
+  }catch(err){
+    btn.disabled=false; btn.textContent="✓ 完成清潔登記";
+    alert("儲存失敗: "+err.message);
+  }
+}
+
+/* ============================================================
+   主管面板
+   ============================================================ */
+function bossTab(t){
+  document.getElementById("bossStatus").classList.toggle("hidden",t!=="status");
+  document.getElementById("bossLog").classList.toggle("hidden",t!=="log");
+  document.getElementById("tabStatus").classList.toggle("active",t==="status");
+  document.getElementById("tabLog").classList.toggle("active",t==="log");
+}
+
+function renderBoss(){
+  // status grid
+  const grid=document.getElementById("grid14"); grid.innerHTML="";
+  let done=0;
+  STALLS.slice().sort((a,b)=>a.id-b.id).forEach(s=>{
+    const st=stateCache[s.id];
+    const ok = st && st.status==="done" && isToday(st.at);
+    if(ok) done++;
+    const d=document.createElement("div");
+    d.className="mini"+(ok?" done":"");
+    d.innerHTML=s.id+(ok?'<small>'+ (st.by||'') +'</small>':'<small>未清</small>');
+    d.title = ok ? (st.by+" "+fmtTime(st.at)) : "尚未清潔";
+    d.onclick=()=>{ if(ok&&st.photo) showLightbox(st.photo); };
+    grid.appendChild(d);
+  });
+  document.getElementById("cDone").textContent=done;
+  document.getElementById("cLeft").textContent=TOTAL-done;
+
+  // log
+  const list=document.getElementById("logList"); list.innerHTML="";
+  const logs=logsCache.slice().sort((a,b)=>b.time-a.time);
+  if(!logs.length){ list.innerHTML='<div class="empty">尚無清潔紀錄</div>'; return; }
+  logs.forEach(l=>{
+    const it=document.createElement("div"); it.className="log-item";
+    it.innerHTML=`<div class="ic">${l.stall}</div>
+      <div class="tx"><b>淋浴間 ${l.stall} 已清潔</b>
+        <div>👤 ${l.user} · ${fmtTime(l.time)}</div></div>
+      ${l.photo?`<img src="${l.photo}" onclick="showLightbox('${l.photo}')">`:''}`;
+    list.appendChild(it);
+  });
+}
+
+function resetToday(){
+  if(confirm("確定要將14間淋浴間重設為「尚未清潔」?(通常每日開始時使用,過往紀錄會保留)")){
+    resetTodayData();
+  }
+}
+
+function exportCSV(){
+  let csv="淋浴間,清潔人員,時間,有照片\n";
+  logsCache.slice().sort((a,b)=>b.time-a.time).forEach(l=>{
+    csv+=`${l.stall},${l.user},${fmtTime(l.time)},${l.photo?"是":"否"}\n`;
+  });
+  const blob=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="清潔紀錄_"+todayKey()+".csv"; a.click();
+}
+
+/* ---------- lightbox ---------- */
+function showLightbox(src){
+  document.getElementById("lb").innerHTML=
+    `<div class="lightbox" onclick="document.getElementById('lb').innerHTML=''"><img src="${src}"></div>`;
+}
+
+/* ============================================================
+   雲端設定精靈 (不需改程式碼, 貼上 Firebase 設定即可)
+   ============================================================ */
+function openSetup(){
+  const mode = useCloud ? '<span style="color:#6ee7b7">● 目前: 雲端同步已啟用</span>'
+                        : '<span style="color:#fcd34d">● 目前: 本機模式 (尚未連雲端)</span>';
+  const cur = (SAVED_CFG&&SAVED_CFG.projectId)?('專案: '+SAVED_CFG.projectId):'';
+  document.getElementById("modal").innerHTML=`
+  <div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="sheet" style="max-height:88vh;overflow:auto">
+      <h3>⚙️ 雲端同步設定</h3>
+      <p class="meta">${mode}　${cur}</p>
+      <ol style="font-size:13px;color:#cbd5e1;line-height:1.9;padding-left:20px;margin:4px 0 14px">
+        <li>到 <b>console.firebase.google.com</b> 建立免費專案</li>
+        <li>開啟 <b>Firestore Database</b>(測試模式)。照片直接存在這裡，<b>不需要付費的 Storage</b></li>
+        <li>專案設定 → 新增「網頁應用程式 <b>&lt;/&gt;</b>」</li>
+        <li>把出現的 <b>firebaseConfig</b> 整段複製，貼到下方框內</li>
+      </ol>
+      <textarea id="cfgInput" placeholder='貼上整段，例如：\nconst firebaseConfig = {\n  apiKey: "AIza...",\n  authDomain: "xxx.firebaseapp.com",\n  projectId: "xxx",\n  storageBucket: "xxx.appspot.com",\n  messagingSenderId: "123",\n  appId: "1:123:web:abc"\n};'
+        style="width:100%;height:150px;border-radius:10px;border:1px solid var(--line);background:#0b1324;color:var(--text);font-size:12.5px;padding:12px;font-family:monospace"></textarea>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ghost" onclick="closeModal()">關閉</button>
+        <button class="btn" onclick="saveSetup()">儲存並啟用雲端</button>
+      </div>
+      ${(SAVED_CFG&&SAVED_CFG.projectId)?'<button class="btn ghost sm" style="width:100%;margin-top:10px" onclick="clearSetup()">移除設定，改回本機模式</button>':''}
+      <details style="margin-top:16px;font-size:12.5px;color:var(--muted)">
+        <summary style="cursor:pointer">建議的 Firestore 安全規則(內部使用)</summary>
+        <pre style="white-space:pre-wrap;background:#0b1324;padding:10px;border-radius:8px;font-size:11.5px">rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    match /{doc=**} { allow read, write: if true; }
+  }
+}</pre>
+      </details>
+    </div>
+  </div>`;
+}
+function parseFbConfig(text){
+  const m=text.match(/\{[\s\S]*\}/);
+  if(!m) throw new Error("找不到設定內容(需包含 { } )");
+  let obj;
+  try{ obj=JSON.parse(m[0]); }
+  catch(e){ obj=(new Function("return ("+m[0]+")"))(); }
+  if(!obj || !obj.projectId) throw new Error("設定缺少 projectId");
+  return obj;
+}
+function saveSetup(){
+  const t=document.getElementById("cfgInput").value.trim();
+  if(!t){ alert("請先貼上 Firebase 設定"); return; }
+  try{
+    const cfg=parseFbConfig(t);
+    localStorage.setItem("dx_fbcfg",JSON.stringify(cfg));
+    alert("✓ 雲端設定已儲存！\n專案: "+cfg.projectId+"\n將重新載入以啟用雲端同步。");
+    location.reload();
+  }catch(e){ alert("設定格式有誤: "+e.message); }
+}
+function clearSetup(){
+  if(confirm("確定移除雲端設定、改回本機模式?")){ localStorage.removeItem("dx_fbcfg"); location.reload(); }
+}
+
+/* ---------- toast ---------- */
+function toast(msg){
+  const t=document.createElement("div");
+  t.textContent=msg;
+  t.style.cssText="position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#16a34a;color:#fff;padding:12px 20px;border-radius:12px;z-index:80;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.4)";
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.transition=".4s";t.style.opacity="0";},1600);
+  setTimeout(()=>t.remove(),2100);
+}
+
+/* ============================================================
+   主渲染
+   ============================================================ */
+function renderAll(){
+  if(!session) return;
+  if(session.role==="staff") renderPlan();
+  else renderBoss();
+}
+
+/* ============================================================
+   啟動
+   ============================================================ */
+(async function start(){
+  buildPlan();
+  const tag=document.getElementById("cloudTag");
+  if(useCloud){
+    tag.textContent="雲端同步"; tag.className="cloud-tag";
+    try{ await initCloud(); }
+    catch(e){ useCloud=false; tag.textContent="本機(雲端連線失敗)"; tag.className="cloud-tag local"; localLoad(); }
+  } else {
+    tag.textContent="本機儲存"; tag.className="cloud-tag local";
+    localLoad();
+  }
+  // allow Enter to login
+  document.getElementById("p").addEventListener("keydown",e=>{if(e.key==="Enter")staffLogin();});
+})();
+</script>
+</body>
+</html>
